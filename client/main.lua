@@ -1,5 +1,5 @@
 local CurrentActionData, PlayerData, userProperties, this_Garage, vehInstance, BlipList, PrivateBlips, JobBlips = {}, {}, {}, {}, {}, {}, {}, {}
-local HasAlreadyEnteredMarker = false
+local HasAlreadyEnteredMarker, WasInPound, WasinJPound = false, false, false
 local LastZone, CurrentAction, CurrentActionMsg
 ESX = nil
 
@@ -66,240 +66,107 @@ local function has_value (tab, val)
 end
 
 -- Start of Ambulance Code
-function OpenAmbulanceGarageMenu()
+function ListOwnedAmbulanceMenu()
 	local elements = {}
-	local NoCars, NoHelis = true, true
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedAmbulanceCars)
-		if #ownedAmbulanceCars > 0 then
-			table.insert(elements, {label = _U('cars'), value = 'cars'})
-			NoCars = false
-		end
-	end, 'ambulance', 'cars')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedAmbulanceHelis)
-		if #ownedAmbulanceHelis > 0 then
-			table.insert(elements, {label = _U('helis'), value = 'helis'})
-			NoHelis = false
-		end
-	end, 'ambulance', 'helis')
-	Citizen.Wait(250)
-
-	if NoCars and NoHelis then
-		ESX.UI.Menu.CloseAll()
-		ESX.ShowNotification(_U('garage_no_veh'))
-	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'ambulancegaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
-			elements = elements
-		}, function(data, menu)
-			local action = data.current.value
-
-			if action == 'cars' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedAmbulanceCars)
-					for _,v in pairs(ownedAmbulanceCars) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'ambulance', 'cars')
-			elseif action == 'helis' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedAmbulanceHelis)
-					for _,v in pairs(ownedAmbulanceHelis) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle2(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'ambulance', 'helis')
-			end
-		end, function(data, menu)
-			menu.close()
-		end)
+	if Config.Main.ShowVehLoc and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		table.insert(elements, {label = spacer, value = nil})
+	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		table.insert(elements, {label = spacer, value = nil})
 	end
-end
 
-function OpenAmbulanceImpoundMenu()
-	ESX.UI.Menu.CloseAll()
-	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'policeambulancemenu', {
-		title = _U('garage_menu'),
-		align = GetConvar('esx_MenuAlign', 'top-left'),
-		elements = {
-			{label = _U('cars'), value = 'cars'},
-			{label = _U('helis'), value = 'helis'}
-	}}, function(data, menu)
-		local action = data.current.value
+	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedAmbulanceCars', function(ownedAmbulanceCars)
+		if #ownedAmbulanceCars == 0 then
+			ESX.ShowNotification(_U('garage_no_ambulance'))
+		else
+			for _,v in pairs(ownedAmbulanceCars) do
+				local hashVehicule = v.vehicle.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+				local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
 
-		if action == 'cars' then
-			local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-			ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outAmbulanceCars)
-				if #outAmbulanceCars == 0 then
-					ESX.ShowNotification(_U('impound_no'))
-				else
-					for _,v in pairs(outAmbulanceCars) do
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Ambulance.PoundP)), '{{' .. _U('return') .. '|return}}'}})
+				if Config.Main.ShowVehLoc then
+					if v.stored then
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+					else
+						labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
 					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-						local doesVehicleExist = false
-
-						if data2.value == 'return' then
-							for k,v in pairs (vehInstance) do
-								if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-									if DoesEntityExist(v.vehicleentity) then
-										doesVehicleExist = true
-									else
-										table.remove(vehInstance, k)
-										doesVehicleExist = false
-									end
-								end
-							end
-
-							if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-									if hasEnoughMoney then
-										ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-											SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-											ESX.UI.Menu.CloseAll()
-										end, 'ambulance', 'both', 'pay')
-									else
-										ESX.ShowNotification(_U('not_enough_money'))
-									end
-								end, 'ambulance', 'both', 'check')
-							else
-								ESX.ShowNotification(_U('veh_out_world'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end
-			end, 'ambulance', 'cars')
-		elseif action == 'helis' then
-			local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-			ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outAmbulanceHelis)
-				if #outAmbulanceHelis == 0 then
-					ESX.ShowNotification(_U('impound_no'))
 				else
-					for _,v in pairs(outAmbulanceHelis) do
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Ambulance.PoundP)), '{{' .. _U('return') .. '|return}}'}})
+					if v.stored then
+						labelvehicle = labelvehicle3
+					else
+						labelvehicle = labelvehicle3
 					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-						local doesVehicleExist = false
-
-						if data2.value == 'return' then
-							for k,v in pairs (vehInstance) do
-								if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-									if DoesEntityExist(v.vehicleentity) then
-										doesVehicleExist = true
-									else
-										table.remove(vehInstance, k)
-										doesVehicleExist = false
-									end
-								end
-							end
-
-							if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-									if hasEnoughMoney then
-										ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-											SpawnVehicle2(vehVehicle, vehPlate, vehFuel)
-											ESX.UI.Menu.CloseAll()
-										end, 'ambulance', 'both', 'pay')
-									else
-										ESX.ShowNotification(_U('not_enough_money'))
-									end
-								end, 'ambulance', 'both', 'check')
-							else
-								ESX.ShowNotification(_U('veh_out_world'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
 				end
-			end, 'ambulance', 'helis')
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
 		end
-	end, function(data, menu)
-		menu.close()
+
+		table.insert(elements, {label = _U('spacer2'), value = nil})
+
+		ESX.TriggerServerCallback('esx_advancedgarage:getOwnedAmbulanceAircrafts', function(ownedAmbulanceAircrafts)
+			if #ownedAmbulanceAircrafts == 0 then
+				ESX.ShowNotification(_U('garage_no_ambulance_aircraft'))
+			else
+				for _,v in pairs(ownedAmbulanceAircrafts) do
+					local hashVehicule = v.vehicle.model
+					local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+					local vehicleName = GetLabelText(aheadVehName)
+					local plate = v.plate
+					local labelvehicle
+					local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+					local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+
+					if Config.Main.ShowVehLoc then
+						if v.stored then
+							labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+						else
+							labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+						end
+					else
+						if v.stored then
+							labelvehicle = labelvehicle3
+						else
+							labelvehicle = labelvehicle3
+						end
+					end
+
+					table.insert(elements, {label = labelvehicle, value = v})
+				end
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_ambulance', {
+				title = _U('garage_ambulance'),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				if data.current.value == nil then
+				elseif data.current.value.vtype == 'aircraft' or data.current.value.vtype == 'helicopter' then
+					if data.current.value.stored then
+						menu.close()
+						SpawnVehicle2(data.current.value.vehicle, data.current.value.plate)
+					else
+						ESX.ShowNotification(_U('ambulance_is_impounded'))
+					end
+				else
+					if data.current.value.stored then
+						menu.close()
+						SpawnVehicle(data.current.value.vehicle, data.current.value.plate)
+					else
+						ESX.ShowNotification(_U('ambulance_is_impounded'))
+					end
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
+		end)
 	end)
 end
 
@@ -336,243 +203,178 @@ function StoreOwnedAmbulanceMenu()
 		ESX.ShowNotification(_U('no_vehicle_to_enter'))
 	end
 end
--- End of Ambulance Code
 
--- Start of Police Code
-function OpenPoliceGarageMenu()
-	local elements = {}
-	local NoCars, NoHelis = true, true
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedPoliceCars)
-		if #ownedPoliceCars > 0 then
-			table.insert(elements, {label = _U('cars'), value = 'cars'})
-			NoCars = false
-		end
-	end, 'police', 'cars')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedPoliceHelis)
-		if #ownedPoliceHelis > 0 then
-			table.insert(elements, {label = _U('helis'), value = 'helis'})
-			NoHelis = false
-		end
-	end, 'police', 'helis')
-	Citizen.Wait(250)
-
-	if NoCars and NoHelis then
-		ESX.UI.Menu.CloseAll()
-		ESX.ShowNotification(_U('garage_no_veh'))
+function ReturnOwnedAmbulanceMenu()
+	if WasinJPound then
+		ESX.ShowNotification(_U('must_wait', Config.Main.JPoundWait))
 	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'policegaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
-			elements = elements
-		}, function(data, menu)
-			local action = data.current.value
+		ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedAmbulanceCars', function(ownedAmbulanceCars)
+			local elements = {}
 
-			if action == 'cars' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedPoliceCars)
-					for _,v in pairs(ownedPoliceCars) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'police', 'cars')
-			elseif action == 'helis' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedPoliceHelis)
-					for _,v in pairs(ownedPoliceHelis) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle2(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'police', 'helis')
+			if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+				local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+				table.insert(elements, {label = spacer, value = nil})
 			end
-		end, function(data, menu)
-			menu.close()
+
+			for _,v in pairs(ownedAmbulanceCars) do
+				local hashVehicule = v.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+				labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_ambulance', {
+				title = _U('pound_ambulance', ESX.Math.GroupDigits(Config.Ambulance.PoundP)),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				local doesVehicleExist = false
+
+				for k,v in pairs (vehInstance) do
+					if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+						if DoesEntityExist(v.vehicleentity) then
+							doesVehicleExist = true
+						else
+							table.remove(vehInstance, k)
+							doesVehicleExist = false
+						end
+					end
+				end
+
+				if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+					ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyAmbulance', function(hasEnoughMoney)
+						if hasEnoughMoney then
+							if data.current.value == nil then
+							else
+								SpawnVehicle(data.current.value, data.current.value.plate)
+								TriggerServerEvent('esx_advancedgarage:payAmbulance')
+								if Config.Main.JPoundTimer then
+									WasinJPound = true
+								end
+							end
+						else
+							ESX.ShowNotification(_U('not_enough_money'))
+						end
+					end)
+				else
+					ESX.ShowNotification(_U('cant_take_out'))
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
 		end)
 	end
 end
+-- End of Ambulance Code
 
-function OpenPoliceImpoundMenu()
-	ESX.UI.Menu.CloseAll()
-	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'policeimpoundmenu', {
-		title = _U('garage_menu'),
-		align = GetConvar('esx_MenuAlign', 'top-left'),
-		elements = {
-			{label = _U('cars'), value = 'cars'},
-			{label = _U('helis'), value = 'helis'}
-	}}, function(data, menu)
-		local action = data.current.value
+-- Start of Police Code
+function ListOwnedPoliceMenu()
+	local elements = {}
 
-		if action == 'cars' then
-			local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-			ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outPoliceCars)
-				if #outPoliceCars == 0 then
-					ESX.ShowNotification(_U('impound_no'))
-				else
-					for _,v in pairs(outPoliceCars) do
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Police.PoundP)), '{{' .. _U('return') .. '|return}}'}})
+	if Config.Main.ShowVehLoc and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		table.insert(elements, {label = spacer, value = nil})
+	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		table.insert(elements, {label = spacer, value = nil})
+	end
+
+	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedPoliceCars', function(ownedPoliceCars)
+		if #ownedPoliceCars == 0 then
+			ESX.ShowNotification(_U('garage_no_police'))
+		else
+			for _,v in pairs(ownedPoliceCars) do
+				local hashVehicule = v.vehicle.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+				local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+
+				if Config.Main.ShowVehLoc then
+					if v.stored then
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+					else
+						labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
 					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-						local doesVehicleExist = false
-
-						if data2.value == 'return' then
-							for k,v in pairs (vehInstance) do
-								if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-									if DoesEntityExist(v.vehicleentity) then
-										doesVehicleExist = true
-									else
-										table.remove(vehInstance, k)
-										doesVehicleExist = false
-									end
-								end
-							end
-
-							if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-									if hasEnoughMoney then
-										ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-											SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-											ESX.UI.Menu.CloseAll()
-										end, 'police', 'both', 'pay')
-									else
-										ESX.ShowNotification(_U('not_enough_money'))
-									end
-								end, 'police', 'both', 'check')
-							else
-								ESX.ShowNotification(_U('veh_out_world'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end
-			end, 'police', 'cars')
-		elseif action == 'helis' then
-			local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-			ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outPoliceHelis)
-				if #outPoliceHelis == 0 then
-					ESX.ShowNotification(_U('impound_no'))
 				else
-					for _,v in pairs(outPoliceHelis) do
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Police.PoundP)), '{{' .. _U('return') .. '|return}}'}})
+					if v.stored then
+						labelvehicle = labelvehicle3
+					else
+						labelvehicle = labelvehicle3
 					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-						local doesVehicleExist = false
-
-						if data2.value == 'return' then
-							for k,v in pairs (vehInstance) do
-								if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-									if DoesEntityExist(v.vehicleentity) then
-										doesVehicleExist = true
-									else
-										table.remove(vehInstance, k)
-										doesVehicleExist = false
-									end
-								end
-							end
-
-							if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-									if hasEnoughMoney then
-										ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-											SpawnVehicle2(vehVehicle, vehPlate, vehFuel)
-											ESX.UI.Menu.CloseAll()
-										end, 'police', 'both', 'pay')
-									else
-										ESX.ShowNotification(_U('not_enough_money'))
-									end
-								end, 'police', 'both', 'check')
-							else
-								ESX.ShowNotification(_U('veh_out_world'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
 				end
-			end, 'police', 'helis')
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
 		end
-	end, function(data, menu)
-		menu.close()
+
+		table.insert(elements, {label = _U('spacer2'), value = nil})
+
+		ESX.TriggerServerCallback('esx_advancedgarage:getOwnedPoliceAircrafts', function(ownedPoliceAircrafts)
+			if #ownedPoliceAircrafts == 0 then
+				ESX.ShowNotification(_U('garage_no_police_aircraft'))
+			else
+				for _,v in pairs(ownedPoliceAircrafts) do
+					local hashVehicule = v.vehicle.model
+					local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+					local vehicleName = GetLabelText(aheadVehName)
+					local plate = v.plate
+					local labelvehicle
+					local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+					local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+
+					if Config.Main.ShowVehLoc then
+						if v.stored then
+							labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+						else
+							labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+						end
+					else
+						if v.stored then
+							labelvehicle = labelvehicle3
+						else
+							labelvehicle = labelvehicle3
+						end
+					end
+
+					table.insert(elements, {label = labelvehicle, value = v})
+				end
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_police', {
+				title = _U('garage_police'),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				if data.current.value == nil then
+				elseif data.current.value.vtype == 'aircraft' or data.current.value.vtype == 'helicopter' then
+					if data.current.value.stored then
+						menu.close()
+						SpawnVehicle2(data.current.value.vehicle, data.current.value.plate)
+					else
+						ESX.ShowNotification(_U('police_is_impounded'))
+					end
+				else
+					if data.current.value.stored then
+						menu.close()
+						SpawnVehicle(data.current.value.vehicle, data.current.value.plate)
+					else
+						ESX.ShowNotification(_U('police_is_impounded'))
+					end
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
+		end)
 	end)
 end
 
@@ -609,131 +411,138 @@ function StoreOwnedPoliceMenu()
 		ESX.ShowNotification(_U('no_vehicle_to_enter'))
 	end
 end
+
+function ReturnOwnedPoliceMenu()
+	if WasinJPound then
+		ESX.ShowNotification(_U('must_wait', Config.Main.JPoundWait))
+	else
+		ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedPoliceCars', function(ownedPoliceCars)
+			local elements = {}
+
+			if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+				local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+				table.insert(elements, {label = spacer, value = nil})
+			end
+
+			for _,v in pairs(ownedPoliceCars) do
+				local hashVehicule = v.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+				labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_police', {
+				title = _U('pound_police', ESX.Math.GroupDigits(Config.Police.PoundP)),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				local doesVehicleExist = false
+
+				for k,v in pairs (vehInstance) do
+					if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+						if DoesEntityExist(v.vehicleentity) then
+							doesVehicleExist = true
+						else
+							table.remove(vehInstance, k)
+							doesVehicleExist = false
+						end
+					end
+				end
+
+				if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+					ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyPolice', function(hasEnoughMoney)
+						if hasEnoughMoney then
+							if data.current.value == nil then
+							else
+								SpawnVehicle(data.current.value, data.current.value.plate)
+								TriggerServerEvent('esx_advancedgarage:payPolice')
+								if Config.Main.JPoundTimer then
+									WasinJPound = true
+								end
+							end
+						else
+							ESX.ShowNotification(_U('not_enough_money'))
+						end
+					end)
+				else
+					ESX.ShowNotification(_U('cant_take_out'))
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
+		end)
+	end
+end
 -- End of Police Code
 
 -- Start of Mechanic Code
-function OpenMechanicGarageMenu()
+function ListOwnedMechanicMenu()
 	local elements = {}
-	local NoCars = true
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedMechanicCars)
-		if #ownedMechanicCars > 0 then
-			table.insert(elements, {label = _U('cars'), value = 'cars'})
-			NoCars = false
+	if Config.Main.ShowVehLoc and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		table.insert(elements, {label = spacer, value = nil})
+	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		table.insert(elements, {label = spacer, value = nil})
+	end
+
+	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedMechanicCars', function(ownedMechanicCars)
+		if #ownedMechanicCars == 0 then
+			ESX.ShowNotification(_U('garage_no_mechanic'))
+		else
+			for _,v in pairs(ownedMechanicCars) do
+				local hashVehicule = v.vehicle.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+				local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+
+				if Config.Main.ShowVehLoc then
+					if v.stored then
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+					else
+						labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+					end
+				else
+					if v.stored then
+						labelvehicle = labelvehicle3
+					else
+						labelvehicle = labelvehicle3
+					end
+				end
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
 		end
-	end, 'mechanic', 'cars')
-	Citizen.Wait(250)
-
-	if NoCars then
-		ESX.UI.Menu.CloseAll()
-		ESX.ShowNotification(_U('garage_no_veh'))
-	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'mechanicgaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
+		
+		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_mechanic', {
+			title = _U('garage_mechanic'),
+			align = Config.Main.MenuAlign,
 			elements = elements
 		}, function(data, menu)
-			local action = data.current.value
-
-			if action == 'cars' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedMechanicCars)
-					for _,v in pairs(ownedMechanicCars) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'mechanic', 'cars')
+			if data.current.value == nil then
+			else
+				if data.current.value.stored then
+					menu.close()
+					SpawnVehicle(data.current.value.vehicle, data.current.value.plate)
+				else
+					ESX.ShowNotification(_U('mechanic_is_impounded'))
+				end
 			end
 		end, function(data, menu)
 			menu.close()
 		end)
-	end
-end
-
-function OpenMechanicImpoundMenu()
-	local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-	ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outMechanicCars)
-		if #outMechanicCars == 0 then
-			ESX.ShowNotification(_U('impound_no'))
-		else
-			for _,v in pairs(outMechanicCars) do
-				table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Mechanic.PoundP)), '{{' .. _U('return') .. '|return}}'}})
-			end
-
-			ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-				local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-				local doesVehicleExist = false
-
-				if data2.value == 'return' then
-					for k,v in pairs (vehInstance) do
-						if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-							if DoesEntityExist(v.vehicleentity) then
-								doesVehicleExist = true
-							else
-								table.remove(vehInstance, k)
-								doesVehicleExist = false
-							end
-						end
-					end
-
-					if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-						ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-							if hasEnoughMoney then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-									SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-									ESX.UI.Menu.CloseAll()
-								end, 'mechanic', 'both', 'pay')
-							else
-								ESX.ShowNotification(_U('not_enough_money'))
-							end
-						end, 'mechanic', 'both', 'check')
-					else
-						ESX.ShowNotification(_U('veh_out_world'))
-					end
-				end
-			end, function(data2, menu2)
-				menu2.close()
-			end)
-		end
-	end, 'mechanic', 'cars')
+	end)
 end
 
 function StoreOwnedMechanicMenu()
@@ -769,186 +578,141 @@ function StoreOwnedMechanicMenu()
 		ESX.ShowNotification(_U('no_vehicle_to_enter'))
 	end
 end
+
+function ReturnOwnedMechanicMenu()
+	if WasinJPound then
+		ESX.ShowNotification(_U('must_wait', Config.Main.JPoundWait))
+	else
+		ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedMechanicCars', function(ownedMechanicCars)
+			local elements = {}
+
+			if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+				local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+				table.insert(elements, {label = spacer, value = nil})
+			end
+
+			for _,v in pairs(ownedMechanicCars) do
+				local hashVehicule = v.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+				labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_mechanic', {
+				title = _U('pound_mechanic', ESX.Math.GroupDigits(Config.Mechanic.PoundP)),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				local doesVehicleExist = false
+
+				for k,v in pairs (vehInstance) do
+					if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+						if DoesEntityExist(v.vehicleentity) then
+							doesVehicleExist = true
+						else
+							table.remove(vehInstance, k)
+							doesVehicleExist = false
+						end
+					end
+				end
+
+				if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+					ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyMechanic', function(hasEnoughMoney)
+						if hasEnoughMoney then
+							if data.current.value == nil then
+							else
+								SpawnVehicle(data.current.value, data.current.value.plate)
+								TriggerServerEvent('esx_advancedgarage:payMechanic')
+								if Config.Main.JPoundTimer then
+									WasinJPound = true
+								end
+							end
+						else
+							ESX.ShowNotification(_U('not_enough_money'))
+						end
+					end)
+				else
+					ESX.ShowNotification(_U('cant_take_out'))
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
+		end)
+	end
+end
 -- End of Mechanic Code
 
 -- Start of Aircraft Code
-function OpenAircraftGarageMenu()
+function ListOwnedAircraftsMenu()
 	local elements = {}
-	local NoHelis, NoPlanes = true, true
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedHelis)
-		if #ownedHelis > 0 then
-			table.insert(elements, {label = _U('helis'), value = 'helis'})
-			NoHelis = false
+	if Config.Main.ShowVehLoc and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		table.insert(elements, {label = spacer, value = nil})
+	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		table.insert(elements, {label = spacer, value = nil})
+	end
+
+	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedAircrafts', function(ownedAircrafts)
+		if #ownedAircrafts == 0 then
+			ESX.ShowNotification(_U('garage_no_aircrafts'))
+		else
+			for _,v in pairs(ownedAircrafts) do
+				local hashVehicule = v.vehicle.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+				local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+
+				if Config.Main.ShowVehLoc then
+					if v.stored then
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+					else
+						labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+					end
+				else
+					if v.stored then
+						labelvehicle = labelvehicle3
+					else
+						labelvehicle = labelvehicle3
+					end
+				end
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
 		end
-	end, 'civ', 'helis')
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedPlanes)
-		if #ownedPlanes > 0 then
-			table.insert(elements, {label = _U('planes'), value = 'planes'})
-			NoPlanes = false
-		end
-	end, 'civ', 'planes')
-	Citizen.Wait(250)
-
-	if NoHelis and NoPlanes then
-		ESX.UI.Menu.CloseAll()
-		ESX.ShowNotification(_U('garage_no_veh'))
-	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'aircraftgaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
+		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_aircraft', {
+			title = _U('garage_aircrafts'),
+			align = Config.Main.MenuAlign,
 			elements = elements
 		}, function(data, menu)
-			local action = data.current.value
-
-			if action == 'helis' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedHelis)
-					for _,v in pairs(ownedHelis) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'helis')
-			elseif action == 'planes' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedPlanes)
-					for _,v in pairs(ownedPlanes) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'planes')
+			if data.current.value == nil then
+			else
+				if data.current.value.stored then
+					menu.close()
+					SpawnVehicle(data.current.value.vehicle, data.current.value.plate)
+				else
+					ESX.ShowNotification(_U('aircraft_is_impounded'))
+				end
 			end
 		end, function(data, menu)
 			menu.close()
 		end)
-	end
+	end)
 end
 
-function OpenAircraftImpoundMenu()
-	local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-	ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outCivAircrafts)
-		if #outCivAircrafts == 0 then
-			ESX.ShowNotification(_U('impound_no'))
-		else
-			for _,v in pairs(outCivAircrafts) do
-				table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Aircrafts.PoundP)), '{{' .. _U('return') .. '|return}}'}})
-			end
-
-			ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-				local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-				local doesVehicleExist = false
-
-				if data2.value == 'return' then
-					for k,v in pairs (vehInstance) do
-						if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-							if DoesEntityExist(v.vehicleentity) then
-								doesVehicleExist = true
-							else
-								table.remove(vehInstance, k)
-								doesVehicleExist = false
-							end
-						end
-					end
-
-					if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-						ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-							if hasEnoughMoney then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-									SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-									ESX.UI.Menu.CloseAll()
-								end, 'civ', 'aircrafts', 'pay')
-							else
-								ESX.ShowNotification(_U('not_enough_money'))
-							end
-						end, 'civ', 'aircrafts', 'check')
-					else
-						ESX.ShowNotification(_U('veh_out_world'))
-					end
-				end
-			end, function(data2, menu2)
-				menu2.close()
-			end)
-		end
-	end, 'civ', 'aircrafts')
-end
-
-function StoreOwnedAircraftMenu()
+function StoreOwnedAircraftsMenu()
 	local playerPed  = GetPlayerPed(-1)
 
 	if IsPedInAnyVehicle(playerPed,  false) then
@@ -981,186 +745,141 @@ function StoreOwnedAircraftMenu()
 		ESX.ShowNotification(_U('no_vehicle_to_enter'))
 	end
 end
+
+function ReturnOwnedAircraftsMenu()
+	if WasInPound then
+		ESX.ShowNotification(_U('must_wait', Config.Main.PoundWait))
+	else
+		ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedAircrafts', function(ownedAircrafts)
+			local elements = {}
+
+			if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+				local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+				table.insert(elements, {label = spacer, value = nil})
+			end
+
+			for _,v in pairs(ownedAircrafts) do
+				local hashVehicule = v.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+				labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_aircraft', {
+				title = _U('pound_aircrafts', ESX.Math.GroupDigits(Config.Aircrafts.PoundP)),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				local doesVehicleExist = false
+
+				for k,v in pairs (vehInstance) do
+					if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+						if DoesEntityExist(v.vehicleentity) then
+							doesVehicleExist = true
+						else
+							table.remove(vehInstance, k)
+							doesVehicleExist = false
+						end
+					end
+				end
+
+				if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+					ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyAircrafts', function(hasEnoughMoney)
+						if hasEnoughMoney then
+							if data.current.value == nil then
+							else
+								SpawnVehicle(data.current.value, data.current.value.plate)
+								TriggerServerEvent('esx_advancedgarage:payAircraft')
+								if Config.Main.PoundTimer then
+									WasInPound = true
+								end
+							end
+						else
+							ESX.ShowNotification(_U('not_enough_money'))
+						end
+					end)
+				else
+					ESX.ShowNotification(_U('cant_take_out'))
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
+		end)
+	end
+end
 -- End of Aircraft Code
 
 -- Start of Boat Code
-function OpenBoatGarageMenu()
+function ListOwnedBoatsMenu()
 	local elements = {}
-	local NoBoats, NoSubs = true, true
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedBoats)
-		if #ownedBoats > 0 then
-			table.insert(elements, {label = _U('boats'), value = 'boats'})
-			NoBoats = false
+	if Config.Main.ShowVehLoc and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		table.insert(elements, {label = spacer, value = nil})
+	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		table.insert(elements, {label = spacer, value = nil})
+	end
+
+	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedBoats', function(ownedBoats)
+		if #ownedBoats == 0 then
+			ESX.ShowNotification(_U('garage_no_boats'))
+		else
+			for _,v in pairs(ownedBoats) do
+				local hashVehicule = v.vehicle.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+				local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+
+				if Config.Main.ShowVehLoc then
+					if v.stored then
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+					else
+						labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+					end
+				else
+					if v.stored then
+						labelvehicle = labelvehicle3
+					else
+						labelvehicle = labelvehicle3
+					end
+				end
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
 		end
-	end, 'civ', 'boats')
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSubs)
-		if #ownedSubs > 0 then
-			table.insert(elements, {label = _U('subs'), value = 'subs'})
-			NoSubs = false
-		end
-	end, 'civ', 'subs')
-	Citizen.Wait(250)
-
-	if NoBoats and NoSubs then
-		ESX.UI.Menu.CloseAll()
-		ESX.ShowNotification(_U('garage_no_veh'))
-	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'boatgaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
+		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_boat', {
+			title = _U('garage_boats'),
+			align = Config.Main.MenuAlign,
 			elements = elements
 		}, function(data, menu)
-			local action = data.current.value
-
-			if action == 'boats' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedBoats)
-					for _,v in pairs(ownedBoats) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'boats')
-			elseif action == 'subs' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSubs)
-					for _,v in pairs(ownedSubs) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'subs')
+			if data.current.value == nil then
+			else
+				if data.current.value.stored then
+					menu.close()
+					SpawnVehicle(data.current.value.vehicle, data.current.value.plate)
+				else
+					ESX.ShowNotification(_U('boat_is_impounded'))
+				end
 			end
 		end, function(data, menu)
 			menu.close()
 		end)
-	end
+	end)
 end
 
-function OpenBoatImpoundMenu()
-	local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-	ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outCivBoats)
-		if #outCivBoats == 0 then
-			ESX.ShowNotification(_U('impound_no'))
-		else
-			for _,v in pairs(outCivBoats) do
-				table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Boats.PoundP)), '{{' .. _U('return') .. '|return}}'}})
-			end
-
-			ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-				local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-				local doesVehicleExist = false
-
-				if data2.value == 'return' then
-					for k,v in pairs (vehInstance) do
-						if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-							if DoesEntityExist(v.vehicleentity) then
-								doesVehicleExist = true
-							else
-								table.remove(vehInstance, k)
-								doesVehicleExist = false
-							end
-						end
-					end
-
-					if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-						ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-							if hasEnoughMoney then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-									SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-									ESX.UI.Menu.CloseAll()
-								end, 'civ', 'boats', 'pay')
-							else
-								ESX.ShowNotification(_U('not_enough_money'))
-							end
-						end, 'civ', 'boats', 'check')
-					else
-						ESX.ShowNotification(_U('veh_out_world'))
-					end
-				end
-			end, function(data2, menu2)
-				menu2.close()
-			end)
-		end
-	end, 'civ', 'boats')
-end
-
-function StoreOwnedBoatMenu()
+function StoreOwnedBoatsMenu()
 	local playerPed  = GetPlayerPed(-1)
 
 	if IsPedInAnyVehicle(playerPed,  false) then
@@ -1193,949 +912,211 @@ function StoreOwnedBoatMenu()
 		ESX.ShowNotification(_U('no_vehicle_to_enter'))
 	end
 end
+
+function ReturnOwnedBoatsMenu()
+	if WasInPound then
+		ESX.ShowNotification(_U('must_wait', Config.Main.PoundWait))
+	else
+		ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedBoats', function(ownedBoats)
+			local elements = {}
+
+			if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+				local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+				table.insert(elements, {label = spacer, value = nil})
+			end
+
+			for _,v in pairs(ownedBoats) do
+				local hashVehicule = v.model
+				local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+				local vehicleName = GetLabelText(aheadVehName)
+				local plate = v.plate
+				local labelvehicle
+				local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+				labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+				table.insert(elements, {label = labelvehicle, value = v})
+			end
+
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_boat', {
+				title = _U('pound_boats', ESX.Math.GroupDigits(Config.Boats.PoundP)),
+				align = Config.Main.MenuAlign,
+				elements = elements
+			}, function(data, menu)
+				local doesVehicleExist = false
+
+				for k,v in pairs (vehInstance) do
+					if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+						if DoesEntityExist(v.vehicleentity) then
+							doesVehicleExist = true
+						else
+							table.remove(vehInstance, k)
+							doesVehicleExist = false
+						end
+					end
+				end
+
+				if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+					ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyBoats', function(hasEnoughMoney)
+						if hasEnoughMoney then
+							if data.current.value == nil then
+							else
+								SpawnVehicle(data.current.value, data.current.value.plate)
+								TriggerServerEvent('esx_advancedgarage:payBoat')
+								if Config.Main.PoundTimer then
+									WasInPound = true
+								end
+							end
+						else
+							ESX.ShowNotification(_U('not_enough_money'))
+						end
+					end)
+				else
+					ESX.ShowNotification(_U('cant_take_out'))
+				end
+			end, function(data, menu)
+				menu.close()
+			end)
+		end)
+	end
+end
 -- End of Boat Code
 
 -- Start of Car Code
-function OpenCarGarageMenu()
+function ListOwnedCarsMenu()
 	local elements = {}
-	local NoCycles, NoCompacts, NoCoupes, NoMotos, NoMuscles, NoOffs, NoSedans, NoSports, NoSportCs, NoSupers, NoSUVs, NoVans = true, true, true, true, true, true, true, true, true, true, true, true
 
-	-- Start of esx_advancedvehicleshop Truck Shop
-	if Config.Main.TruckShop then
-		table.insert(elements, {label = _U('large_trucks'), value = 'large_trucks'})
+
+	if Config.Main.ShowVehLoc and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		table.insert(elements, {label = spacer, value = nil})
+	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		table.insert(elements, {label = spacer, value = nil})
 	end
-	-- End of esx_advancedvehicleshop Truck Shop
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedCycles)
-		if #ownedCycles > 0 then
-			table.insert(elements, {label = _U('cycles'), value = 'cycles'})
-			NoCycles = false
-		end
-	end, 'civ', 'cycles')
+	-- Part of choosing 
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedCompacts)
-		if #ownedCompacts > 0 then
-			table.insert(elements, {label = _U('compacts'), value = 'compacts'})
-			NoCompacts = false
-		end
-	end, 'civ', 'compacts')
+	local jobElements = {
+		{label = _U("society_owned"), value = "society_owned"},
+		{label = _U("personaly_owned"), value = "personaly_owned"}
+	}
 
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedCoupes)
-		if #ownedCoupes > 0 then
-			table.insert(elements, {label = _U('coupes'), value = 'coupes'})
-			NoCoupes = false
-		end
-	end, 'civ', 'coupes')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedMotorcycles)
-		if #ownedMotorcycles > 0 then
-			table.insert(elements, {label = _U('motorcycles'), value = 'motorcycles'})
-			NoMotos = false
-		end
-	end, 'civ', 'motorcycles')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedMuscles)
-		if #ownedMuscles > 0 then
-			table.insert(elements, {label = _U('muscles'), value = 'muscles'})
-			NoMuscles = false
-		end
-	end, 'civ', 'muscles')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedOffRoads)
-		if #ownedOffRoads > 0 then
-			table.insert(elements, {label = _U('offroads'), value = 'offroads'})
-			NoOffs = false
-		end
-	end, 'civ', 'offroads')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSedans)
-		if #ownedSedans > 0 then
-			table.insert(elements, {label = _U('sedans'), value = 'sedans'})
-			NoSedans = false
-		end
-	end, 'civ', 'sedans')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSports)
-		if #ownedSports > 0 then
-			table.insert(elements, {label = _U('sports'), value = 'sports'})
-			NoSports = false
-		end
-	end, 'civ', 'sports')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSportsClassics)
-		if #ownedSportsClassics > 0 then
-			table.insert(elements, {label = _U('sportsclassics'), value = 'sportsclassics'})
-			NoSportCs = false
-		end
-	end, 'civ', 'sportsclassics')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSupers)
-		if #ownedSupers > 0 then
-			table.insert(elements, {label = _U('supers'), value = 'supers'})
-			NoSupers = false
-		end
-	end, 'civ', 'supers')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSUVs)
-		if #ownedSUVs > 0 then
-			table.insert(elements, {label = _U('suvs'), value = 'suvs'})
-			NoSUVs = false
-		end
-	end, 'civ', 'suvs')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedVans)
-		if #ownedVans > 0 then
-			table.insert(elements, {label = _U('vans'), value = 'vans'})
-			NoVans = false
-		end
-	end, 'civ', 'vans')
-	Citizen.Wait(250)
-
-	if NoCycles and NoCompacts and NoCoupes and NoMotos and NoMuscles and NoOffs and NoSedans and NoSports and NoSportCs and NoSupers and NoSUVs and NoVans and not Config.Main.TruckShop then
-		ESX.UI.Menu.CloseAll()
-		ESX.ShowNotification(_U('garage_no_veh'))
-	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'cargaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
-			elements = elements
-		}, function(data, menu)
-			local action = data.current.value
-
-			if action == 'large_trucks' then
-				if Config.Main.TruckShop then
-					OpenTruckGarageMenu()
+	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car', {
+		title = _U('garage_cars'),
+		align = Config.Main.MenuAlign,
+		elements = jobElements
+	}, function(data, menu)
+		if data.current.value == "society_owned" then
+			ESX.TriggerServerCallback('esx_advancedgarage:getOwnedCarsSociety', function(ownedCars)
+				if #ownedCars == 0 then
+					ESX.ShowNotification(_U('garage_no_cars'))
 				else
-					ESX.ShowNotification(_U('large_trucks_no'))
+					for _,v in pairs(ownedCars) do
+						local hashVehicule = v.vehicle.model
+						local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+						local vehicleName = GetLabelText(aheadVehName)
+						local plate = v.plate
+						local labelvehicle
+						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+						local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+		
+						if Config.Main.ShowVehLoc then
+							if v.stored then
+								labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+							else
+								labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+							end
+						else
+							if v.stored then
+								labelvehicle = labelvehicle3
+							else
+								labelvehicle = labelvehicle3
+							end
+						end
+		
+						table.insert(elements, {label = labelvehicle, value = v})
+					end
 				end
-			elseif action == 'cycles' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedCycles)
-					for _,v in pairs(ownedCycles) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'cycles')
-			elseif action == 'compacts' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedCompacts)
-					for _,v in pairs(ownedCompacts) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'compacts')
-			elseif action == 'coupes' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedCoupes)
-					for _,v in pairs(ownedCoupes) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'coupes')
-			elseif action == 'motorcycles' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedMotorcycles)
-					for _,v in pairs(ownedMotorcycles) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'motorcycles')
-			elseif action == 'muscles' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedMuscles)
-					for _,v in pairs(ownedMuscles) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'muscles')
-			elseif action == 'offroads' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedOffRoads)
-					for _,v in pairs(ownedOffRoads) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'offroads')
-			elseif action == 'sedans' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSedans)
-					for _,v in pairs(ownedSedans) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'sedans')
-			elseif action == 'sports' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSports)
-					for _,v in pairs(ownedSports) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'sports')
-			elseif action == 'sportsclassics' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSportsClassics)
-					for _,v in pairs(ownedSportsClassics) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'sportsclassics')
-			elseif action == 'supers' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSupers)
-					for _,v in pairs(ownedSupers) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'supers')
-			elseif action == 'suvs' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedSUVs)
-					for _,v in pairs(ownedSUVs) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'suvs')
-			elseif action == 'vans' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedVans)
-					for _,v in pairs(ownedVans) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'vans')
-			end
-		end, function(data, menu)
-			menu.close()
-		end)
-	end
-end
-
-function OpenTruckGarageMenu()
-	local elements = {}
-	local NoBox, NoHaul, NoOther, NoTrans = true, true, true, true
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedBox)
-		if #ownedBox > 0 then
-			table.insert(elements, {label = _U('box'), value = 'box'})
-			NoBox = false
-		end
-	end, 'civ', 'box')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedHaul)
-		if #ownedHaul > 0 then
-			table.insert(elements, {label = _U('haul'), value = 'haul'})
-			NoHaul = false
-		end
-	end, 'civ', 'haul')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedOther)
-		if #ownedOther > 0 then
-			table.insert(elements, {label = _U('other'), value = 'other'})
-			NoOther = false
-		end
-	end, 'civ', 'other')
-
-	ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedTrans)
-		if #ownedTrans > 0 then
-			table.insert(elements, {label = _U('trans'), value = 'trans'})
-			NoTrans = false
-		end
-	end, 'civ', 'trans')
-	Citizen.Wait(250)
-
-	if NoBox and NoHaul and NoOther and NoTrans then
-		ESX.ShowNotification(_U('garage_no', _U('large_trucks')))
-	else
-		ESX.UI.Menu.CloseAll()
-		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'truckgaragemenu', {
-			title = _U('garage_menu'),
-			align = GetConvar('esx_MenuAlign', 'top-left'),
-			elements = elements
-		}, function(data, menu)
-			local action = data.current.value
-
-			if action == 'box' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedBox)
-					for _,v in pairs(ownedBox) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'box')
-			elseif action == 'haul' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedHaul)
-					for _,v in pairs(ownedHaul) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'haul')
-			elseif action == 'other' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedOther)
-					for _,v in pairs(ownedOther) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'other')
-			elseif action == 'trans' then
-				local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('veh_loc'), _U('actions')}, rows = {}}
-				ESX.TriggerServerCallback('esx_advancedgarage:getOwnedVehicles', function(ownedTrans)
-					for _,v in pairs(ownedTrans) do
-						local vehStored = _U('veh_loc_unknown')
-						if v.stored then
-							vehStored = _U('veh_loc_garage')
-						else
-							vehStored = _U('veh_loc_impound')
-						end
-
-						table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, vehStored, '{{' .. _U('spawn') .. '|spawn}} {{' .. _U('rename') .. '|rename}}'}})
-					end
-
-					ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'owned_vehicles_list', elements, function(data2, menu2)
-						local vehVehicle, vehPlate, vehStored, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.stored, data2.data.fuel
-						if data2.value == 'spawn' then
-							if vehStored then
-								SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-								ESX.UI.Menu.CloseAll()
-							else
-								ESX.ShowNotification(_U('veh_not_here'))
-							end
-						elseif data2.value == 'rename' then
-							if Config.Main.RenameVehs then
-								ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'renamevehicle', {
-									title = _U('veh_rename', Config.Main.RenameMin, Config.Main.RenameMax - 1)
-								}, function(data3, menu3)
-									if string.len(data3.value) >= Config.Main.RenameMin and string.len(data3.value) < Config.Main.RenameMax then
-										TriggerServerEvent('esx_advancedgarage:renameVehicle', vehPlate, data3.value)
-										ESX.UI.Menu.CloseAll()
-									else
-										ESX.ShowNotification(_U('veh_rename_empty', Config.Main.RenameMin, Config.Main.RenameMax - 1))
-									end
-								end, function(data3, menu3)
-									menu3.close()
-								end)
-							else
-								ESX.ShowNotification(_U('veh_rename_no'))
-							end
-						end
-					end, function(data2, menu2)
-						menu2.close()
-					end)
-				end, 'civ', 'trans')
-			end
-		end, function(data, menu)
-			menu.close()
-		end)
-	end
-end
-
-function OpenCarImpoundMenu()
-	local elements = {head = {_U('veh_plate'), _U('veh_name'), _U('impound_fee'), _U('actions')}, rows = {}}
-	ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedVehicles', function(outCivCars)
-		if #outCivCars == 0 then
-			ESX.ShowNotification(_U('impound_no'))
-		else
-			for _,v in pairs(outCivCars) do
-				table.insert(elements.rows, {data = v, cols = {v.plate, v.vehName, _U('impound_fee_value', ESX.Math.GroupDigits(Config.Cars.PoundP)), '{{' .. _U('return') .. '|return}}'}})
-			end
-
-			ESX.UI.Menu.Open('list', GetCurrentResourceName(), 'out_owned_vehicles_list', elements, function(data2, menu2)
-				local vehVehicle, vehPlate, vehFuel = data2.data.vehicle, data2.data.plate, data2.data.fuel
-				local doesVehicleExist = false
-
-				if data2.value == 'return' then
-					for k,v in pairs (vehInstance) do
-						if ESX.Math.Trim(v.plate) == ESX.Math.Trim(vehPlate) then
-							if DoesEntityExist(v.vehicleentity) then
-								doesVehicleExist = true
-							else
-								table.remove(vehInstance, k)
-								doesVehicleExist = false
-							end
-						end
-					end
-
-					if not doesVehicleExist and not DoesAPlayerDrivesVehicle(vehPlate) then
-						ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function(hasEnoughMoney)
-							if hasEnoughMoney then
-								ESX.TriggerServerCallback('esx_advancedgarage:payImpound', function()
-									SpawnVehicle(vehVehicle, vehPlate, vehFuel)
-									ESX.UI.Menu.CloseAll()
-								end, 'civ', 'cars', 'pay')
-							else
-								ESX.ShowNotification(_U('not_enough_money'))
-							end
-						end, 'civ', 'cars', 'check')
+		
+				ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car_personal', {
+					title = _U('garage_cars'),
+					align = Config.Main.MenuAlign,
+					elements = elements
+				}, function(data2, menu2)
+					if data2.current.value == nil then
 					else
-						ESX.ShowNotification(_U('veh_out_world'))
+						if data2.current.value.stored then
+							menu.close()
+							SpawnVehicle(data2.current.value.vehicle, data2.current.value.plate)
+						else
+							ESX.ShowNotification(_U('car_is_impounded'))
+						end
+					end
+				end, function(data2, menu2)
+					menu2.close()
+				end)
+			end)
+		else
+			ESX.TriggerServerCallback('esx_advancedgarage:getOwnedCars', function(ownedCars)
+				if #ownedCars == 0 then
+					ESX.ShowNotification(_U('garage_no_cars'))
+				else
+					for _,v in pairs(ownedCars) do
+						local hashVehicule = v.vehicle.model
+						local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+						local vehicleName = GetLabelText(aheadVehName)
+						local plate = v.plate
+						local labelvehicle
+						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+						local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+		
+						if Config.Main.ShowVehLoc then
+							if v.stored then
+								labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+							else
+								labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+							end
+						else
+							if v.stored then
+								labelvehicle = labelvehicle3
+							else
+								labelvehicle = labelvehicle3
+							end
+						end
+		
+						table.insert(elements, {label = labelvehicle, value = v})
 					end
 				end
-			end, function(data2, menu2)
-				menu2.close()
+		
+				ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car', {
+					title = _U('garage_cars'),
+					align = Config.Main.MenuAlign,
+					elements = elements
+				}, function(data1, menu1)
+					if data1.current.value == nil then
+					else
+						if data1.current.value.stored then
+							menu.close()
+							SpawnVehicle(data1.current.value.vehicle, data1.current.value.plate)
+						else
+							ESX.ShowNotification(_U('car_is_impounded'))
+						end
+					end
+				end, function(data1, menu1)
+					menu1.close()
+				end)
 			end)
 		end
-	end, 'civ', 'cars')
+	end, function(data, menu)
+		menu.close()
+	end)
+
+
 end
 
-function StoreOwnedCarMenu()
+function StoreOwnedCarsMenu()
 	local playerPed  = GetPlayerPed(-1)
 
 	if IsPedInAnyVehicle(playerPed,  false) then
@@ -2168,18 +1149,194 @@ function StoreOwnedCarMenu()
 		ESX.ShowNotification(_U('no_vehicle_to_enter'))
 	end
 end
+
+function ReturnOwnedCarsMenu()
+	if WasInPound then
+		ESX.ShowNotification(_U('must_wait', Config.Main.PoundWait))
+	else
+
+		local jobElements = {
+			{label = _U("society_owned"), value = "society_owned"},
+			{label = _U("personaly_owned"), value = "personaly_owned"}
+		}
+
+		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_car_elements_job_owned', {
+			title = _U('pound_cars', ESX.Math.GroupDigits(Config.Cars.PoundP)),
+			align = Config.Main.MenuAlign,
+			elements = jobElements
+		}, function(data1, menu1)
+
+			if data1.current.value == "society_owned" then
+
+				ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedCarsSociety', function(ownedCars)
+					local elements = {}
+
+					if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+						local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+						table.insert(elements, {label = spacer, value = nil})
+					end
+
+					for _,v in pairs(ownedCars) do
+						local hashVehicule = v.model
+						local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+						local vehicleName = GetLabelText(aheadVehName)
+						local plate = v.plate
+						local labelvehicle
+						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+						table.insert(elements, {label = labelvehicle, value = v})
+					end
+
+					ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_car_society', {
+						title = _U('pound_cars', ESX.Math.GroupDigits(Config.Cars.PoundP)),
+						align = Config.Main.MenuAlign,
+						elements = elements
+					}, function(data, menu)
+						local doesVehicleExist = false
+
+						for k,v in pairs (vehInstance) do
+							if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+								if DoesEntityExist(v.vehicleentity) then
+									doesVehicleExist = true
+								else
+									table.remove(vehInstance, k)
+									doesVehicleExist = false
+								end
+							end
+						end
+
+						if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+							ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyCars', function(hasEnoughMoney)
+								if hasEnoughMoney then
+									if data.current.value == nil then
+									else
+										SpawnVehicle(data.current.value, data.current.value.plate)
+										TriggerServerEvent('esx_advancedgarage:payCar')
+										if Config.Main.PoundTimer then
+											WasInPound = true
+										end
+									end
+								else
+									ESX.ShowNotification(_U('not_enough_money'))
+								end
+							end)
+						else
+							ESX.ShowNotification(_U('cant_take_out'))
+						end
+					end, function(data, menu)
+						menu.close()
+					end)
+				end)
+
+			else
+
+				ESX.TriggerServerCallback('esx_advancedgarage:getOutOwnedCars', function(ownedCars)
+					local elements = {}
+
+					if Config.Main.ShowVehLoc == false and Config.Main.Spacers then
+						local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
+						table.insert(elements, {label = spacer, value = nil})
+					end
+
+					for _,v in pairs(ownedCars) do
+						local hashVehicule = v.model
+						local aheadVehName = GetDisplayNameFromVehicleModel(hashVehicule)
+						local vehicleName = GetLabelText(aheadVehName)
+						local plate = v.plate
+						local labelvehicle
+						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
+
+						labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('return'))
+
+						table.insert(elements, {label = labelvehicle, value = v})
+					end
+
+					ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'return_owned_car_personal', {
+						title = _U('pound_cars', ESX.Math.GroupDigits(Config.Cars.PoundP)),
+						align = Config.Main.MenuAlign,
+						elements = elements
+					}, function(data, menu)
+						local doesVehicleExist = false
+
+						for k,v in pairs (vehInstance) do
+							if ESX.Math.Trim(v.plate) == ESX.Math.Trim(data.current.value.plate) then
+								if DoesEntityExist(v.vehicleentity) then
+									doesVehicleExist = true
+								else
+									table.remove(vehInstance, k)
+									doesVehicleExist = false
+								end
+							end
+						end
+
+						if not doesVehicleExist and not DoesAPlayerDrivesVehicle(data.current.value.plate) then
+							ESX.TriggerServerCallback('esx_advancedgarage:checkMoneyCars', function(hasEnoughMoney)
+								if hasEnoughMoney then
+									if data.current.value == nil then
+									else
+										SpawnVehicle(data.current.value, data.current.value.plate)
+										TriggerServerEvent('esx_advancedgarage:payCar')
+										if Config.Main.PoundTimer then
+											WasInPound = true
+										end
+									end
+								else
+									ESX.ShowNotification(_U('not_enough_money'))
+								end
+							end)
+						else
+							ESX.ShowNotification(_U('cant_take_out'))
+						end
+					end, function(data, menu)
+						menu.close()
+					end)
+				end)
+
+			end
+		end, function(data1, menu1)
+			menu1.close()
+		end)
+	end
+end
 -- End of Car Code
+
+-- WasInPound & WasinJPound Code
+Citizen.CreateThread(function()
+	while true do
+		Citizen.Wait(0)
+
+		if Config.Main.PoundTimer then
+			if WasInPound then
+				Citizen.Wait(Config.Main.PoundWait * 60000)
+				WasInPound = false
+			end
+		end
+
+		if Config.Main.JPoundTimer then
+			if WasinJPound then
+				Citizen.Wait(Config.Main.JPoundWait * 60000)
+				WasinJPound = false
+			end
+		end
+	end
+end)
 
 -- Repair Vehicles
 function RepairVehicle(apprasial, vehicle, vehicleProps)
 	ESX.UI.Menu.CloseAll()
+
+	local elements = {
+		{label = _U('return_vehicle').." ($"..apprasial..")", value = 'yes'},
+		{label = _U('see_mechanic'), value = 'no'}
+	}
+
 	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'delete_menu', {
 		title = _U('damaged_vehicle'),
-		align = GetConvar('esx_MenuAlign', 'top-left'),
-		elements = {
-			{label = _U('return_vehicle', apprasial), value = 'yes'},
-			{label = _U('see_mechanic'), value = 'no'}
-	}}, function(data, menu)
+		align = Config.Main.MenuAlign,
+		elements = elements
+	}, function(data, menu)
 		menu.close()
 
 		if data.current.value == 'yes' then
@@ -2203,19 +1360,13 @@ function StoreVehicle(vehicle, vehicleProps)
 		end
 	end
 
-	if Config.Main.LegacyFuel then
-		currentFuel = exports['LegacyFuel']:GetFuel(vehicle)
-		TriggerServerEvent('esx_advancedgarage:setVehicleFuel', vehicleProps.plate, currentFuel)
-		print("currentFuel: "..currentFuel)
-	end
-
 	DeleteEntity(vehicle)
 	TriggerServerEvent('esx_advancedgarage:setVehicleState', vehicleProps.plate, true)
 	ESX.ShowNotification(_U('vehicle_in_garage'))
 end
 
 -- Spawn Vehicles
-function SpawnVehicle(vehicle, plate, fuel)
+function SpawnVehicle(vehicle, plate)
 	ESX.Game.SpawnVehicle(vehicle.model, this_Garage.Spawner, this_Garage.Heading, function(callback_vehicle)
 		ESX.Game.SetVehicleProperties(callback_vehicle, vehicle)
 		SetVehRadioStation(callback_vehicle, "OFF")
@@ -2227,16 +1378,13 @@ function SpawnVehicle(vehicle, plate, fuel)
 		--SetVehicleBodyHealth(callback_vehicle, 1000) -- Might not be needed
 		local carplate = GetVehicleNumberPlateText(callback_vehicle)
 		table.insert(vehInstance, {vehicleentity = callback_vehicle, plate = carplate})
-		if Config.Main.LegacyFuel then
-			exports['LegacyFuel']:SetFuel(callback_vehicle, fuel)
-		end
 		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
 	end)
 
 	TriggerServerEvent('esx_advancedgarage:setVehicleState', plate, false)
 end
 
-function SpawnVehicle2(vehicle, plate, fuel)
+function SpawnVehicle2(vehicle, plate)
 	ESX.Game.SpawnVehicle(vehicle.model, this_Garage.Spawner2, this_Garage.Heading2, function(callback_vehicle)
 		ESX.Game.SetVehicleProperties(callback_vehicle, vehicle)
 		SetVehRadioStation(callback_vehicle, "OFF")
@@ -2248,9 +1396,6 @@ function SpawnVehicle2(vehicle, plate, fuel)
 		--SetVehicleBodyHealth(callback_vehicle, 1000) -- Might not be needed
 		local carplate = GetVehicleNumberPlateText(callback_vehicle)
 		table.insert(vehInstance, {vehicleentity = callback_vehicle, plate = carplate})
-		if Config.Main.LegacyFuel then
-			exports['LegacyFuel']:SetFuel(callback_vehicle, fuel)
-		end
 		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
 	end)
 
@@ -2762,11 +1907,7 @@ Citizen.CreateThread(function()
 			if IsControlJustReleased(0, 38) then
 				if CurrentAction == 'ambulance_garage_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'ambulance' then
-						if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-							OpenAmbulanceGarageMenu()
-						else
-							ESX.ShowNotification(_U('cant_in_veh'))
-						end
+						ListOwnedAmbulanceMenu()
 					else
 						ESX.ShowNotification(_U('must_ambulance'))
 					end
@@ -2786,21 +1927,13 @@ Citizen.CreateThread(function()
 					end
 				elseif CurrentAction == 'ambulance_pound_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'ambulance' then
-						if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-							OpenAmbulanceImpoundMenu()
-						else
-							ESX.ShowNotification(_U('cant_in_veh'))
-						end
+						ReturnOwnedAmbulanceMenu()
 					else
 						ESX.ShowNotification(_U('must_ambulance'))
 					end
 				elseif CurrentAction == 'police_garage_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' then
-						if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-							OpenPoliceGarageMenu()
-						else
-							ESX.ShowNotification(_U('cant_in_veh'))
-						end
+						ListOwnedPoliceMenu()
 					else
 						ESX.ShowNotification(_U('must_police'))
 					end
@@ -2820,21 +1953,13 @@ Citizen.CreateThread(function()
 					end
 				elseif CurrentAction == 'police_pound_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' then
-						if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-							OpenPoliceImpoundMenu()
-						else
-							ESX.ShowNotification(_U('cant_in_veh'))
-						end
+						ReturnOwnedPoliceMenu()
 					else
 						ESX.ShowNotification(_U('must_police'))
 					end
 				elseif CurrentAction == 'mechanic_garage_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'mechanic' then
-						if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-							OpenMechanicGarageMenu()
-						else
-							ESX.ShowNotification(_U('cant_in_veh'))
-						end
+						ListOwnedMechanicMenu()
 					else
 						ESX.ShowNotification(_U('must_mechanic'))
 					end
@@ -2854,24 +1979,16 @@ Citizen.CreateThread(function()
 					end
 				elseif CurrentAction == 'mechanic_pound_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'mechanic' then
-						if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-							OpenMechanicImpoundMenu()
-						else
-							ESX.ShowNotification(_U('cant_in_veh'))
-						end
+						ReturnOwnedMechanicMenu()
 					else
 						ESX.ShowNotification(_U('must_mechanic'))
 					end
 				elseif CurrentAction == 'aircraft_garage_point' then
-					if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-						OpenAircraftGarageMenu()
-					else
-						ESX.ShowNotification(_U('cant_in_veh'))
-					end
+					ListOwnedAircraftsMenu()
 				elseif CurrentAction == 'aircraft_store_point' then
 					if IsThisModelAHeli(model) or IsThisModelAPlane(model) then
 						if (GetPedInVehicleSeat(playerVeh, -1) == playerPed) then
-							StoreOwnedAircraftMenu()
+							StoreOwnedAircraftsMenu()
 						else
 							ESX.ShowNotification(_U('driver_seat'))
 						end
@@ -2879,39 +1996,27 @@ Citizen.CreateThread(function()
 						ESX.ShowNotification(_U('not_correct_veh'))
 					end
 				elseif CurrentAction == 'aircraft_pound_point' then
-					if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-						OpenAircraftImpoundMenu()
-					else
-						ESX.ShowNotification(_U('cant_in_veh'))
-					end
+					ReturnOwnedAircraftsMenu()
 				elseif CurrentAction == 'boat_garage_point' then
-					if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-						OpenBoatGarageMenu()
-					else
-						ESX.ShowNotification(_U('cant_in_veh'))
-					end
+					ListOwnedBoatsMenu()
 				elseif CurrentAction == 'boat_store_point' then
-					if (GetPedInVehicleSeat(playerVeh, -1) == playerPed) then
-						StoreOwnedBoatMenu()
+					if IsThisModelABoat(model) then
+						if (GetPedInVehicleSeat(playerVeh, -1) == playerPed) then
+							StoreOwnedBoatsMenu()
+						else
+							ESX.ShowNotification(_U('driver_seat'))
+						end
 					else
-						ESX.ShowNotification(_U('driver_seat'))
+						ESX.ShowNotification(_U('not_correct_veh'))
 					end
 				elseif CurrentAction == 'boat_pound_point' then
-					if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-						OpenBoatImpoundMenu()
-					else
-						ESX.ShowNotification(_U('cant_in_veh'))
-					end
+					ReturnOwnedBoatsMenu()
 				elseif CurrentAction == 'car_garage_point' then
-					if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-						OpenCarGarageMenu()
-					else
-						ESX.ShowNotification(_U('cant_in_veh'))
-					end
+					ListOwnedCarsMenu()
 				elseif CurrentAction == 'car_store_point' then
 					if IsThisModelACar(model) or IsThisModelABicycle(model) or IsThisModelABike(model) or IsThisModelAQuadbike(model) then
 						if (GetPedInVehicleSeat(playerVeh, -1) == playerPed) then
-							StoreOwnedCarMenu()
+							StoreOwnedCarsMenu()
 						else
 							ESX.ShowNotification(_U('driver_seat'))
 						end
@@ -2919,11 +2024,7 @@ Citizen.CreateThread(function()
 						ESX.ShowNotification(_U('not_correct_veh'))
 					end
 				elseif CurrentAction == 'car_pound_point' then
-					if not IsPedSittingInAnyVehicle(PlayerPedId()) then
-						OpenCarImpoundMenu()
-					else
-						ESX.ShowNotification(_U('cant_in_veh'))
-					end
+					ReturnOwnedCarsMenu()
 				end
 
 				CurrentAction = nil
@@ -3104,7 +2205,7 @@ function RefreshJobBlips()
 				SetBlipAsShortRange(blip, true)
 
 				BeginTextCommandSetBlipName("STRING")
-				AddTextComponentString(_U('blip_ambulance_impound'))
+				AddTextComponentString(_U('blip_ambulance_pound'))
 				EndTextCommandSetBlipName(blip)
 				table.insert(JobBlips, blip)
 			end
@@ -3142,7 +2243,7 @@ function RefreshJobBlips()
 				SetBlipAsShortRange(blip, true)
 
 				BeginTextCommandSetBlipName("STRING")
-				AddTextComponentString(_U('blip_police_impound'))
+				AddTextComponentString(_U('blip_police_pound'))
 				EndTextCommandSetBlipName(blip)
 				table.insert(JobBlips, blip)
 			end
@@ -3180,10 +2281,113 @@ function RefreshJobBlips()
 				SetBlipAsShortRange(blip, true)
 
 				BeginTextCommandSetBlipName("STRING")
-				AddTextComponentString(_U('blip_mechanic_impound'))
+				AddTextComponentString(_U('blip_mechanic_pound'))
 				EndTextCommandSetBlipName(blip)
 				table.insert(JobBlips, blip)
 			end
 		end
 	end
+end
+
+RegisterCommand("changeownertosociety", function()
+	
+	giveCarKeystoSociety()
+	
+end, false)
+
+function giveCarKeystoSociety()
+	local playerPed = PlayerPedId()
+	local coords    = GetEntityCoords(playerPed)
+
+	if IsPedInAnyVehicle(playerPed,  false) then
+        vehicle = GetVehiclePedIsIn(playerPed, false)			
+    else
+        vehicle = GetClosestVehicle(coords.x, coords.y, coords.z, 7.0, 0, 70)
+    end
+
+	local plate = tostring(GetVehicleNumberPlateText(vehicle))
+	local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
+
+	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'vehicle_infos', {
+		title    = _U('transfering_car'),
+		align    = 'top-left',
+		elements = {
+			{label = _U('no'), value = 0},
+			{label = _U('no'),   value = 1},
+			{label = _U('no'), value = 2},
+			{label = _U('yes'),   value = 'yes'}
+		}}, function(data, menu)
+		menu.close()
+
+	    if data.current.value == 'yes' then
+
+                ESX.TriggerServerCallback('esx_advancedgarage:requestPlayerCars', function(isOwnedVehicle)
+
+					if isOwnedVehicle then
+                    
+                    	ESX.ShowNotification(_U('transfering_car', plate))
+                    	TriggerServerEvent('esx_advancedgarage:setvehicleWonerSociety', vehicleProps)
+                	end
+                
+            end, plate)
+
+        end
+
+	end)
+end
+
+if Config.BossCanWithDrawVehicle then
+
+	RegisterCommand("changeownertosociety", function()
+		
+		if ESX.PlayerData.job_grade.name == "boss" then
+			getSocietyVehicle()
+		else
+			ESX.ShowNotification(_U('not_boss'))
+		end
+		
+	end, false)
+	
+	function getSocietyVehicle()
+		local playerPed = PlayerPedId()
+		local coords    = GetEntityCoords(playerPed)
+	
+		if IsPedInAnyVehicle(playerPed,  false) then
+			vehicle = GetVehiclePedIsIn(playerPed, false)			
+		else
+			vehicle = GetClosestVehicle(coords.x, coords.y, coords.z, 7.0, 0, 70)
+		end
+	
+		local plate = tostring(GetVehicleNumberPlateText(vehicle))
+		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
+	
+		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'vehicle_infos', {
+			title    = _U('withdrawing_car'),
+			align    = 'top-left',
+			elements = {
+				{label = _U('no'), value = 0},
+				{label = _U('no'),   value = 1},
+				{label = _U('no'), value = 2},
+				{label = _U('yes'),   value = 'yes'}
+			}}, function(data, menu)
+			menu.close()
+	
+			if data.current.value == 'yes' then
+	
+					ESX.TriggerServerCallback('esx_advancedgarage:requestSocietyCars', function(isOwnedVehicle)
+	
+						if isOwnedVehicle then
+						
+							ESX.ShowNotification(_U('withdrawing_car', plate))
+							TriggerServerEvent('esx_advancedgarage:setVehiclePersonalyOwned', vehicleProps)
+						end
+					
+				end, plate)
+	
+			end
+	
+		end)
+	end
+
+
 end
