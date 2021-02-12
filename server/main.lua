@@ -423,6 +423,38 @@ ESX.RegisterServerCallback('esx_advancedgarage:getOwnedAircrafts', function(sour
 	end
 end)
 
+ESX.RegisterServerCallback('esx_advancedgarage:getOwnedAircraftsSociety', function(source, cb)
+	local ownedAircrafts = {}
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	if Config.Main.ShowVehLoc then
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type AND job = @job', { -- job = NULL
+			['@owner'] = xPlayer.job.name,
+			['@Type'] = 'aircraft',
+			['@job'] = 'civ'
+		}, function(data)
+			for _,v in pairs(data) do
+				local vehicle = json.decode(v.vehicle)
+				table.insert(ownedAircrafts, {vehicle = vehicle, stored = v.stored, plate = v.plate})
+			end
+			cb(ownedAircrafts)
+		end)
+	else
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type AND job = @job AND `stored` = @stored', { -- job = NULL
+			['@owner'] = xPlayer.job.name,
+			['@Type'] = 'aircraft',
+			['@job'] = 'civ',
+			['@stored'] = true
+		}, function(data)
+			for _,v in pairs(data) do
+				local vehicle = json.decode(v.vehicle)
+				table.insert(ownedAircrafts, {vehicle = vehicle, stored = v.stored, plate = v.plate})
+			end
+			cb(ownedAircrafts)
+		end)
+	end
+end)
+
 ESX.RegisterServerCallback('esx_advancedgarage:getOutOwnedAircrafts', function(source, cb)
 	local ownedAircrafts = {}
 	local xPlayer = ESX.GetPlayerFromId(source)
@@ -497,12 +529,62 @@ ESX.RegisterServerCallback('esx_advancedgarage:getOwnedBoats', function(source, 
 	end
 end)
 
+ESX.RegisterServerCallback('esx_advancedgarage:getOwnedBoatsSociety', function(source, cb)
+	local ownedBoats = {}
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	if Config.Main.ShowVehLoc then
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type AND job = @job', { -- job = NULL
+			['@owner'] = xPlayer.job.name,
+			['@Type'] = 'boat',
+			['@job'] = 'civ'
+		}, function(data)
+			for _,v in pairs(data) do
+				local vehicle = json.decode(v.vehicle)
+				table.insert(ownedBoats, {vehicle = vehicle, stored = v.stored, plate = v.plate})
+			end
+			cb(ownedBoats)
+		end)
+	else
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type AND job = @job AND `stored` = @stored', { -- job = NULL
+			['@owner'] = xPlayer.job.name,
+			['@Type'] = 'boat',
+			['@job'] = 'civ',
+			['@stored'] = true
+		}, function(data)
+			for _,v in pairs(data) do
+				local vehicle = json.decode(v.vehicle)
+				table.insert(ownedBoats, {vehicle = vehicle, stored = v.stored, plate = v.plate})
+			end
+			cb(ownedBoats)
+		end)
+	end
+end)
+
 ESX.RegisterServerCallback('esx_advancedgarage:getOutOwnedBoats', function(source, cb)
 	local ownedBoats = {}
 	local xPlayer = ESX.GetPlayerFromId(source)
 
 	MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type AND job = @job AND `stored` = @stored', { -- job = NULL
 		['@owner'] = xPlayer.identifier,
+		['@Type'] = 'boat',
+		['@job'] = 'civ',
+		['@stored'] = false
+	}, function(data) 
+		for _,v in pairs(data) do
+			local vehicle = json.decode(v.vehicle)
+			table.insert(ownedBoats, vehicle)
+		end
+		cb(ownedBoats)
+	end)
+end)
+
+ESX.RegisterServerCallback('esx_advancedgarage:getOutOwnedBoatsSociety', function(source, cb)
+	local ownedBoats = {}
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type AND job = @job AND `stored` = @stored', { -- job = NULL
+		['@owner'] = xPlayer.job.name,
 		['@Type'] = 'boat',
 		['@job'] = 'civ',
 		['@stored'] = false
@@ -840,12 +922,12 @@ AddEventHandler('esx_advancedgarage:setVehiclePersonalyOwned', function (vehicle
 	local _source = source
 	local xPlayer = ESX.GetPlayerFromId(_source)
 
-	if xPlayer.job_grade.name == "boss" then
+	if xPlayer.job.grade_name == "boss" then
 
 
 		MySQL.Async.execute('UPDATE owned_vehicles SET owner=@owner WHERE plate=@plate',
 		{
-			['@owner']   = xPlayer.job.name,
+			['@owner']   = xPlayer.identifier,
 			['@plate']   = vehicleProps.plate
 		},
 

@@ -77,7 +77,9 @@ Locales['en'] = {
 	-- Society cars
 	['society_owned'] = "Society Owned Vehicles",
 	['personaly_owned'] = "Personaly Owned Vehicles",
-	['transfering_car'] = "You are transfering car to society with license plate: %s",
-	['withdrawing_car'] = "You are withdrawing car from society to your own garage with plate: %s",
-	['not_boss'] = "You are not a boss and not allowed to withdraw society owned cars."
+	['transfering_car'] = "You are transfering car to society.",
+	['withdrawing_car'] = "You are withdrawing car from society to your own garage",
+	['not_boss'] = "You are not a boss and not allowed to withdraw society owned cars.",
+	['no'] = "No",
+	['yes'] = "Yes"
 }

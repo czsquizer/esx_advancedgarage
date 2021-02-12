@@ -1,8 +1,7 @@
 # About esx_advancedgarage:
-Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/))
+Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020
 
 # Creating Issues
-* Check the [Closed Topics](https://github.com/HumanTree92/esx_advancedgarage/issues?q=is%3Aissue+is%3Aclosed) & [Wiki](http://www.velocitientertainment.com/customs/) before opening an issue to see if your issue has already been Answered.
 * Do NOT Delete the Pre-Written Text in the issue.
 * Failue to due any of the above will result in Topic being deleted & you being Blocked. The Pre-Written text helps me with getting to the Bottom of the Issues & i hate explaining things over & over.
 
@@ -76,9 +75,15 @@ Scripts that will no longer be Maintained.
 * [Twitch](http://twitch.tv/humantree92)
 * [eBay](http://ebay.com/usr/humantree92)
 
+# Visit Squizer's "social media"
+* [Tebex](https://sqz.tebex.io/)
+* [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
+* [Discord](https://discord.gg/FVXAu2F)
+* [GitHub](https://github.com/czsquizer/)
+
 # Legal
 ### License
-esx_advancedgarage - Advanced Garage for ESX V1 Final or EXM
+esx_advancedgarage - Advanced Garage for ESX V1 Final or EXM. Please, do not rename, republish it as yours or even sell it as yours. Nobody cares about name of the resource, but you do not want to loose honor.
 
 Copyright (C) 2011-2020 Velociti Entertainment
 

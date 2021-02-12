@@ -1,10 +1,10 @@
 Config = {}
 Config.Locale = 'en'
-Config.BossCanWithDrawVehicle = true
+Config.BossCanWithDrawVehicle = true -- If a player with job grade "boss" is allowed to take society vehicles and change them to him
 
 Config.Main = {
 	MenuAlign = 'top-left', -- Menu Align. Current will show on Top Left.
-	DrawDistance = 20, -- Draw Distance to Markers.
+	DrawDistance = 100.0, -- Draw Distance to Markers.
 	AdvVehShop = false, -- Set to true if using esx_advancedvehicleshop.
 	Commands = false, -- Will allow players to do /getproperties instead of having to log out & back in to see Private Garages.
 	ParkVehicles = false, -- true = Automatically Park all Vehicles in Garage on Server/Script Restart | false = Opposite of true but players will have to go to Pound to get their Vehicle Back.
