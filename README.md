@@ -1,3 +1,10 @@
+# Visit Squizer's "social media"
+* [Tebex](https://sqz.tebex.io/)
+* [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
+* [Discord](https://discord.gg/FVXAu2F)
+* [GitHub](https://github.com/czsquizer/)
+### Editted by Squizer#3020
+
 # About esx_advancedgarage:
 Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020
 
@@ -74,12 +81,6 @@ Scripts that will no longer be Maintained.
 * [YouTube](http://youtube.com/user/HumanTree92)
 * [Twitch](http://twitch.tv/humantree92)
 * [eBay](http://ebay.com/usr/humantree92)
-
-# Visit Squizer's "social media"
-* [Tebex](https://sqz.tebex.io/)
-* [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
-* [Discord](https://discord.gg/FVXAu2F)
-* [GitHub](https://github.com/czsquizer/)
 
 # Legal
 ### License
