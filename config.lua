@@ -876,7 +876,7 @@ Config.PrivateCarGarages = {
 
 Citizen.CreateThread(function()
 
-	Wait(5000)
+	Wait(15000)
 	local scripts = {
 		"sqz_unijob",
 		"scb_rpmenu",
@@ -931,7 +931,6 @@ Citizen.CreateThread(function()
 									sqz.tebex.io
 
 					Scripts made by Squizer#3020 and Scoobiik#9981
-																																																																	 
 			]]
 			print(printData)
 			break
