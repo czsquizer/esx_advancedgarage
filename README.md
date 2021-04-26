@@ -1,18 +1,15 @@
-# Visit Squizer's "social media"
-* [Tebex](https://sqz.tebex.io/)
-* [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
-* [Discord](https://discord.gg/FVXAu2F)
-* [GitHub](https://github.com/czsquizer/)
-### Editted by Squizer#3020
-
 # About esx_advancedgarage:
 Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020
+
+__You can support me__
+[![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?hosted_button_id=M4KV4Q9LDWEBC)  
 
 # Creating Issues
 * Do NOT Delete the Pre-Written Text in the issue.
 * Failue to due any of the above will result in Topic being deleted & you being Blocked. The Pre-Written text helps me with getting to the Bottom of the Issues & i hate explaining things over & over.
 
 # Helpfull Info:
+* Added possibility to transfer vehicles to and from society using commands /changeownertosociety and /withdrawcar (to get it back from the society -> You must enable it in the config and be a boss)
 * Works with esx_vehicleshop & esx_advancedvehicleshop.
 * Unable to Store Vehicles you don't own.
 * Ability to Kick people who try to Cheat using the Garage & Set Custom Kick Message.
@@ -36,6 +33,13 @@ Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti
 4) Edit the `config.lua` before starting the script. By default everything is turned off.
 5) Place `esx_advancedgarage` in your ESX Directory
 6) Add `start esx_advancedgarage` to your server.cfg
+
+# Visit Squizer's "social media"
+* [Tebex](https://sqz.tebex.io/)
+* [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
+* [Discord](https://discord.gg/FVXAu2F)
+* [GitHub](https://github.com/czsquizer/)
+### Editted by Squizer#3020
 
 # KNOWN BUGS:
 * There is a Limit on how many Vehicles that can be in each garage. For me it was 36 Vehicles in the Car Garage but after that i couldn't pull anymore out. You can still buy more Boats & Planes if the Car Garage is at 36.
