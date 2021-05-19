@@ -34,8 +34,19 @@ __You can support me__
 5) Place `esx_advancedgarage` in your ESX Directory
 6) Add `start esx_advancedgarage` to your server.cfg
 
+# Other Scripts made by Squizer
+* [sqz_unijob](https://forum.cfx.re/t/esx-sqz-unijob-advanced-system-for-easy-adding-jobs/2100467) - Script for adding multiple jobs into 1 script just by edditing config
+* [sqz_drugs](https://forum.cfx.re/t/esx-sqz-drugs-advanced-drug-system/2167691) - Complete system for drugs, planting, harvesting, watering, processing and dealing drugs
+* [scb_rpmenu](https://forum.cfx.re/t/esx-scb-rpmenu-facilitates-all-works-player-menu-admin-menu/2110753) - Complete RP menu with all features you could need for your RP server
+* [sqz_switchjob](https://github.com/czsquizer/switchjob) - Script for switching and having multiple jobs
+* [sqz_carmenu](https://github.com/czsquizer/sqz_carmenu) - Script for all the car features you would ever need
+* [sqz_hospital](https://github.com/czsquizer/sqz_hospital) - Script that allows player heal themselves in the hospital in case there are no doctors on your server
+* [sqz_itemwhitelist](https://github.com/czsquizer/sqz_itemwhitelist) - Prop and vehicle whitelist/blacklist to prevent hackers spamming your server with entities
+* [others](https://github.com/czsquizer?tab=repositories) - You can find there my forks of other scripts, check them as well
+
 # Visit Squizer's "social media"
 * [Tebex](https://sqz.tebex.io/)
+* [Page](https://squizer.cz)
 * [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
 * [Discord](https://discord.gg/FVXAu2F)
 * [GitHub](https://github.com/czsquizer/)
