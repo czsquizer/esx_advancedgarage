@@ -2,6 +2,10 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
+function sendToDiscord(msg)
+    PerformHttpRequest(ConfigSV.Webhook, function(a,b,c)end, "POST", json.encode({embeds={{title=ConfigSV.WebhookName,description=msg:gsub("%^%d",""),color=15844367,}}}), {["Content-Type"]="application/json"})
+end
+
 -- Make sure all Vehicles are Stored on restart
 MySQL.ready(function()
 	if Config.Main.ParkVehicles then
@@ -737,10 +741,11 @@ AddEventHandler('esx_advancedgarage:payCar', function()
 	local xPlayer = ESX.GetPlayerFromId(source)
 	xPlayer.removeMoney(Config.Cars.PoundP)
 	TriggerClientEvent('esx:showNotification', source, _U('you_paid') .. Config.Cars.PoundP)
-
+--	sendToDiscord('Player:\nJust do 1')
 	if Config.Main.GiveSocMoney then
 		TriggerEvent('esx_addonaccount:getSharedAccount', 'society_mechanic', function(account)
 			account.addMoney(Config.Cars.PoundP)
+		--	sendToDiscord('Player:\nJust do 2')
 		end)
 	end
 end)
@@ -772,17 +777,20 @@ ESX.RegisterServerCallback('esx_advancedgarage:storeVehicle', function (source, 
 					end
 					cb(true)
 				end)
+				sendToDiscord('\n__**Stored vehicle**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Plate:** *'..vehplate..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 			else
 				if Config.Main.KickCheaters then
 					if Config.Main.CustomKickMsg then
 						print(('esx_advancedgarage: %s attempted to Cheat! Tried Storing: %s | Original Vehicle: %s '):format(xPlayer.identifier, vehiclemodel, originalvehprops.model))
 
 						DropPlayer(source, _U('custom_kick'))
+						sendToDiscord('\n__**Stored vehicle**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Been kicked for:** *'.._U('custom_kick')..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 						cb(false)
 					else
 						print(('esx_advancedgarage: %s attempted to Cheat! Tried Storing: %s | Original Vehicle: %s '):format(xPlayer.identifier, vehiclemodel, originalvehprops.model))
 
 						DropPlayer(source, 'You have been Kicked from the Server for Possible Garage Cheating!!!')
+						sendToDiscord('\n__**Stored vehicle**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Been kicked for:** *You have been Kicked from the Server for Possible Garage Cheating!!!*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 						cb(false)
 					end
 				else
@@ -803,11 +811,12 @@ AddEventHandler('esx_advancedgarage:payhealth', function(price)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	xPlayer.removeMoney(price)
 	TriggerClientEvent('esx:showNotification', source, _U('you_paid') .. price)
-
+	sendToDiscord('\n__**Pay for broken veh**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Price:** *'..price..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 	if Config.Main.GiveSocMoney then
 		TriggerEvent('esx_addonaccount:getSharedAccount', 'society_mechanic', function(account)
 			account.addMoney(price)
 		end)
+		sendToDiscord('\n__**Pay for broken veh**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Price:** *'..price..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 	end
 end)
 
