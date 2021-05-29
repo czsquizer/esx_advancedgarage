@@ -52,7 +52,7 @@ Locales['cs'] = {
 	['pound_police'] = 'Police Odtahovka: Poplatek $%s',
 	['garage_no_police'] = 'Nevlastnis zadne PD vozidlo',
 	['garage_no_police_aircraft'] = 'Nevlastnis zadne PD letadlo',
-	['police_is_impounded'] = 'Tvoje PD vozidlo zde neni'
+	['police_is_impounded'] = 'Tvoje PD vozidlo zde neni',
 	['must_police'] = 'Nejsi PD',
 	-- Mechanic
 	['blip_mechanic_garage'] = 'Garaze | Mechanic ',
