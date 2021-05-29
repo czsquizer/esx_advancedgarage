@@ -4,45 +4,6 @@ local LastZone, CurrentAction, CurrentActionMsg
 ESX = nil
 
 Citizen.CreateThread(function()
-	AddTextEntry("c7", "Chevrolet Corvette c7")
-	AddTextEntry("bluecunt", "HSV GTS")
-    AddTextEntry("bmci", "BMW M5 2016")
-    AddTextEntry("rmodx6", "BMW X6M")
-	AddTextEntry("g65", "Mercedes G65")
-	AddTextEntry("m5e60", "BMW M5 E60")
-	AddTextEntry("rmodm3e36", "BMW M3 e36")
-	AddTextEntry("nissantitan17", "Nissan Titan")
-	AddTextEntry("bmws", "BMW S1000")
-	AddTextEntry("skyline", "Nissan r34")
-	AddTextEntry("c63", "Mercedes C63 S")
-	AddTextEntry("MGT", "Ford Mustang GT")
-	AddTextEntry("rs62", "Audi rs6")
-	AddTextEntry("gtr", "Nissan r35 GTR")
-	AddTextEntry("rmodmi8lb", "BMW I8")
-	AddTextEntry("rmodgt63", "Mercedes GT 63")
-	AddTextEntry("bentayga17", "Bentley Bentayga")
-	AddTextEntry("hellcat", "Dodge Challenger Hellcat")
-	AddTextEntry("r1", "Yamaha R1")
-	AddTextEntry("rmodsupra", "Toyota Supra")
-	AddTextEntry("regera", "Koenigsegg Regera")
-	AddTextEntry("ad11", "Aston Martin Vanquish")
-	AddTextEntry("a6", "Audi A6")
-	AddTextEntry("69charger", "Dodge Charger 1969")
-	AddTextEntry("300srt8", "Chrysler 300 SRT")
-	AddTextEntry("16ss", "Chevrolet Camaro SS")
-	AddTextEntry("16challenger", "Dodge Challenger")
-	AddTextEntry("amggtc", "Mercedes AMG GT C")
-	AddTextEntry("evo9", "Mitsubishi Evo 9")
-	AddTextEntry("golfp", "Volkswagen Golf")
-	AddTextEntry("rmodm4gts", "BMW M4 gts")
-	AddTextEntry("fct", "Ferrari California")
-	AddTextEntry("g500", "Brabus G500")
-	AddTextEntry("rmodsian", "lamborghini Sian")
-	AddTextEntry("p1", "McLaren P1")
-
-end)
-
-Citizen.CreateThread(function()
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(0)
@@ -2194,7 +2155,7 @@ Citizen.CreateThread(function()
 					if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
 						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'	
 						DisableControlAction(0, 22, true)
-						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring('Zmáčkni ~g~[E]~s~ pro otevření garáže'))
+						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring('Zmackni ~g~[E]~s~ pro otevreni garaze'))
 					end
 				end
 
@@ -2210,7 +2171,7 @@ Citizen.CreateThread(function()
 
 					if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 						DisableControlAction(0, 22, true)
-						DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring('Zmáčkni ~r~[E]~s~ pro uložení vozu'))
+						DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring('Zmackni ~r~[E]~s~ pro ulozeni vozu'))
 						isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 					end
 
@@ -2233,7 +2194,7 @@ Citizen.CreateThread(function()
 	
 						if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
-							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring('Zmáčkni ~g~[E]~s~ pro otevření garáže'))
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring('Zmackni ~g~[E]~s~ pro otevreni garaze'))
 						end
 					end
 	
@@ -2247,7 +2208,7 @@ Citizen.CreateThread(function()
 						end
 	
 						if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
-							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring('Zmáčkni ~r~[E]~s~ pro uložení vozu'))
+							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring('Zmackni ~r~[E]~s~ pro ulozeni vozu'))
 							isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 						end
 					end
