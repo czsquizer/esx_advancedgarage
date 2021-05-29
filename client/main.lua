@@ -4,6 +4,45 @@ local LastZone, CurrentAction, CurrentActionMsg
 ESX = nil
 
 Citizen.CreateThread(function()
+	AddTextEntry("c7", "Chevrolet Corvette c7")
+	AddTextEntry("bluecunt", "HSV GTS")
+    AddTextEntry("bmci", "BMW M5 2016")
+    AddTextEntry("rmodx6", "BMW X6M")
+	AddTextEntry("g65", "Mercedes G65")
+	AddTextEntry("m5e60", "BMW M5 E60")
+	AddTextEntry("rmodm3e36", "BMW M3 e36")
+	AddTextEntry("nissantitan17", "Nissan Titan")
+	AddTextEntry("bmws", "BMW S1000")
+	AddTextEntry("skyline", "Nissan r34")
+	AddTextEntry("c63", "Mercedes C63 S")
+	AddTextEntry("MGT", "Ford Mustang GT")
+	AddTextEntry("rs62", "Audi rs6")
+	AddTextEntry("gtr", "Nissan r35 GTR")
+	AddTextEntry("rmodmi8lb", "BMW I8")
+	AddTextEntry("rmodgt63", "Mercedes GT 63")
+	AddTextEntry("bentayga17", "Bentley Bentayga")
+	AddTextEntry("hellcat", "Dodge Challenger Hellcat")
+	AddTextEntry("r1", "Yamaha R1")
+	AddTextEntry("rmodsupra", "Toyota Supra")
+	AddTextEntry("regera", "Koenigsegg Regera")
+	AddTextEntry("ad11", "Aston Martin Vanquish")
+	AddTextEntry("a6", "Audi A6")
+	AddTextEntry("69charger", "Dodge Charger 1969")
+	AddTextEntry("300srt8", "Chrysler 300 SRT")
+	AddTextEntry("16ss", "Chevrolet Camaro SS")
+	AddTextEntry("16challenger", "Dodge Challenger")
+	AddTextEntry("amggtc", "Mercedes AMG GT C")
+	AddTextEntry("evo9", "Mitsubishi Evo 9")
+	AddTextEntry("golfp", "Volkswagen Golf")
+	AddTextEntry("rmodm4gts", "BMW M4 gts")
+	AddTextEntry("fct", "Ferrari California")
+	AddTextEntry("g500", "Brabus G500")
+	AddTextEntry("rmodsian", "lamborghini Sian")
+	AddTextEntry("p1", "McLaren P1")
+
+end)
+
+Citizen.CreateThread(function()
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(0)
@@ -1318,11 +1357,11 @@ function ListOwnedCarsMenu()
 
 
 	if Config.Main.ShowVehLoc and Config.Main.Spacers then
-		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		local spacer = ('<b><u><span style="color:white;">%s</span> - <span style="color:white;">%s</span> - <span style="color:white;">%s</span></b></u>'):format(_U('plate'), _U('vehicle'), _U('location'))
 		table.insert(elements, {label = spacer, value = nil})
 	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
-		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
-		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		local spacer = ('<span style="color:white;">%s</span> - <span style="color:white;">%s</span>'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:white;">%s</span>'):format(_U('spacer1')), value = nil})
 		table.insert(elements, {label = spacer, value = nil})
 	end
 
@@ -1349,14 +1388,15 @@ function ListOwnedCarsMenu()
 						local vehicleName = GetLabelText(aheadVehName)
 						local plate = v.plate
 						local labelvehicle
-						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
-						local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+						local labelvehicle2 = ('<i><span style="color:rgb(234, 48, 48);">%s</span> - <span style="color:rgb(216, 245, 0);">%s</span> - </i>'):format(plate, vehicleName)
+						local labelvehicle3 = ('<i><span style="color:rgb(234, 48, 48);">%s</span> - <span style="color:rgb(216, 245, 0);">%s</span></i>'):format(plate, vehicleName)
+						
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+								labelvehicle = labelvehicle2 .. ('<i><span style="color:rgb(42, 255, 0);">%s</span></i>'):format(_U('loc_garage'))
 							else
-								labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+								labelvehicle = labelvehicle2 .. ('<i><span style="color:red;">%s</span></i>'):format(_U('loc_pound'))
 							end
 						else
 							if v.stored then
@@ -1380,6 +1420,7 @@ function ListOwnedCarsMenu()
 						if data2.current.value.stored then
 							menu.close()
 							SpawnVehicle(data2.current.value.vehicle, data2.current.value.plate)
+							exports['mythic_notify']:DoHudText('success', 'Vozidlo vytaženo z garáže')
 						else
 							ESX.ShowNotification(_U('car_is_impounded'))
 						end
@@ -2141,31 +2182,76 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.CarGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
+				local coords = GetEntityCoords(GetPlayerPed(-1))
+				local player = GetPlayerPed(-1)
 
 				if distance < Config.Main.DrawDistance then
 					letSleep = false
 
-					if Config.Cars.Markers.Points.Type ~= -1 then
-						DrawMarker(Config.Cars.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Cars.Markers.Points.x, Config.Cars.Markers.Points.y, Config.Cars.Markers.Points.z, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Cars.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
 					end
 
-					if distance < Config.Cars.Markers.Points.x then
-						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
+					if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
+						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'	
+						DisableControlAction(0, 22, true)
+						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring('Zmáčkni ~g~[E]~s~ pro otevření garáže'))
 					end
 				end
 
 				if distance2 < Config.Main.DrawDistance then
 					letSleep = false
 
-					if Config.Cars.Markers.Delete.Type ~= -1 then
-						DrawMarker(Config.Cars.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Cars.Markers.Delete.x, Config.Cars.Markers.Delete.y, Config.Cars.Markers.Delete.z, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Cars.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						DrawMarker(21, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+					else
+						DrawMarker(21, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 					end
 
-					if distance2 < Config.Cars.Markers.Delete.x then
+					if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring('Zmáčkni ~r~[E]~s~ pro uložení vozu'))
 						isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 					end
+
 				end
 			end
+
+			if Config.BezBlipu then
+				for k,v in pairs(Config.BezBlipu) do
+					local distance = #(playerCoords - v.Marker)
+					local distance2 = #(playerCoords - v.Deleter)
+					local coords = GetEntityCoords(GetPlayerPed(-1))
+					local player = GetPlayerPed(-1)
+	
+					if distance < Config.Main.DrawDistance then
+						letSleep = false
+	
+						if Config.Cars.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
+						--	DrawMarker(21, v.Marker + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Cars.Markers.Points.x, Config.Cars.Markers.Points.y, Config.Cars.Markers.Points.z, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)
+						end
+	
+						if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
+							isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring('Zmáčkni ~g~[E]~s~ pro otevření garáže'))
+						end
+					end
+	
+					if distance2 < Config.Main.DrawDistance then
+						letSleep = false
+	
+						if Config.Cars.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+							DrawMarker(21, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+						else
+							DrawMarker(21, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
+						end
+	
+						if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring('Zmáčkni ~r~[E]~s~ pro uložení vozu'))
+							isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
+						end
+					end
+				end
 
 			for k,v in pairs(Config.CarPounds) do
 				local distance = #(playerCoords - v.Marker)
@@ -2183,6 +2269,7 @@ Citizen.CreateThread(function()
 				end
 			end
 		end
+
 
 		if Config.Pvt.Garages then
 			for k,v in pairs(Config.PrivateCarGarages) do
@@ -2232,6 +2319,7 @@ Citizen.CreateThread(function()
 			Citizen.Wait(500)
 		end
 	end
+end
 end)
 
 -- Key Controls
@@ -2243,10 +2331,9 @@ Citizen.CreateThread(function()
 		local model = GetEntityModel(playerVeh)
 
 		if CurrentAction then
-			ESX.ShowHelpNotification(CurrentActionMsg)
 
 			if IsControlJustReleased(0, 38) then
-
+				
 				if CurrentAction == 'ambulance_garage_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'ambulance' then
 						ListOwnedAmbulanceMenu()
@@ -2376,6 +2463,7 @@ Citizen.CreateThread(function()
 		end
 	end
 end)
+
 
 -- Create Blips
 function CreateBlips()
@@ -2631,9 +2719,13 @@ function RefreshJobBlips()
 	end
 end
 
-RegisterCommand("changeownertosociety", function()
+RegisterCommand("prepsatnafirmu", function()
 	
-	giveCarKeystoSociety()
+	if ESX.PlayerData.job.grade_name == "boss" then
+		giveCarKeystoSociety()
+	else
+		ESX.ShowNotification(_U('not_boss'))
+	end
 	
 end, false)
 
@@ -2656,8 +2748,9 @@ function giveCarKeystoSociety()
 		elements = {
 			{label = _U('no'), value = 0},
 			{label = _U('no'),   value = 1},
+			{label = _U('yes'),   value = 'yes'},
 			{label = _U('no'), value = 2},
-			{label = _U('yes'),   value = 'yes'}
+			{label = _U('no'), value = 3}
 		}}, function(data, menu)
 		menu.close()
 
@@ -2680,7 +2773,7 @@ end
 
 if Config.BossCanWithDrawVehicle then
 
-	RegisterCommand("withdrawcar", function()
+	RegisterCommand("vybratauto", function()
 		
 		if ESX.PlayerData.job.grade_name == "boss" then
 			getSocietyVehicle()
@@ -2709,8 +2802,9 @@ if Config.BossCanWithDrawVehicle then
 			elements = {
 				{label = _U('no'), value = 0},
 				{label = _U('no'),   value = 1},
+				{label = _U('yes'),   value = 'yes'},
 				{label = _U('no'), value = 2},
-				{label = _U('yes'),   value = 'yes'}
+				{label = _U('no'), value = 3},
 			}}, function(data, menu)
 			menu.close()
 	
@@ -2733,4 +2827,23 @@ if Config.BossCanWithDrawVehicle then
 	end
 
 
+end
+
+function DrawText3Dx(x,y,z, text)
+local onScreen, _x, _y = World3dToScreen2d(x, y, z)
+local px, py, pz = table.unpack(GetGameplayCamCoords())
+    
+    if onScreen then
+      SetTextScale(0.55, 0.31)
+      SetTextFont(1)
+      SetTextDropshadow(10, 100, 100, 100, 255)
+      SetTextProportional(1)
+      SetTextColour(255, 255, 255, 215)
+      SetTextEntry("STRING")
+      SetTextCentre(1)
+      AddTextComponentString(text)
+      DrawText(_x,_y)
+        local factor = (string.len(text)) / 320
+        DrawRect(_x,_y+0.0135, 0.025+ factor, 0.03, 0, 0, 0, 68)
+    end
 end
