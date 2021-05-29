@@ -1,8 +1,5 @@
 # About esx_advancedgarage:
-Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020
-
-__You can support me__
-[![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?hosted_button_id=M4KV4Q9LDWEBC)  
+Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020 & Ice Cube 🧊#7557
 
 # Creating Issues
 * Do NOT Delete the Pre-Written Text in the issue.
@@ -44,19 +41,13 @@ __You can support me__
 * [sqz_itemwhitelist](https://github.com/czsquizer/sqz_itemwhitelist) - Prop and vehicle whitelist/blacklist to prevent hackers spamming your server with entities
 * [others](https://github.com/czsquizer?tab=repositories) - You can find there my forks of other scripts, check them as well
 
-# Visit Squizer's "social media"
-* [Tebex](https://sqz.tebex.io/)
-* [Page](https://squizer.cz)
-* [Cfx.re Forum](https://forum.cfx.re/u/squizer/)
-* [Discord](https://discord.gg/FVXAu2F)
-* [GitHub](https://github.com/czsquizer/)
-### Editted by Squizer#3020
 
 # KNOWN BUGS:
 * There is a Limit on how many Vehicles that can be in each garage. For me it was 36 Vehicles in the Car Garage but after that i couldn't pull anymore out. You can still buy more Boats & Planes if the Car Garage is at 36.
 * It is Possible to Duplicate Vehicles if the resource is restarted while vehicles are out.
 * Might not work well when using the Car Dealer Job. (Haven't Tested this)
 * If you are having problems with the SQL from esx_vehicleshop try the SQL from here. If a problem with the SQL from here try esx_vehicleshop SQL. If still having problems please submit an issue.
+* May bugging players, when holding space in menu, while vehicle is loading.
 
 # Other Scripts:
 If you like this please check out some of my other stuff like
