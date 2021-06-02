@@ -1,8 +1,8 @@
 Config = {}
 Config.Locale = "en"
 Config.CanTakeToSociety = true 
-Config.CommandToAddSociety = "addsociety"
-Config.GradeToAddsociety = "boss"
+Config.CommandToAddSociety = "addsociety" -- Command to rewrite your personal car to society car
+Config.GradeToAddsociety = "boss" 
 ---
 Config.BossCanWithDrawVehicle = true 
 Config.GradeToTakeFromSociety = "boss"
