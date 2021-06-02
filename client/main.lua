@@ -2750,16 +2750,6 @@ function RefreshJobBlips()
 	end
 end
 
-if Config.CanTakeToSociety then
-	RegisterCommand(Config.CommandToAddSociety, function()
-		if ESX.PlayerData.job.grade_name == Config.GradeToAddsociety then
-			giveCarKeystoSociety()
-		else
-			ESX.ShowNotification(_U('not_boss'))
-		end
-	end, false)
-end
-
 function giveCarKeystoSociety()
 	local playerPed = PlayerPedId()
 	local coords    = GetEntityCoords(playerPed)
@@ -2802,11 +2792,25 @@ function giveCarKeystoSociety()
 	end)
 end
 
+if Config.CanTakeToSociety then
+	RegisterCommand(Config.CommandToAddSociety, function()
+		if Config.OnlyGradeCanAdd and ESX.PlayerData.job.grade_name == Config.GradeToAddsociety then
+			giveCarKeystoSociety()
+		elseif Config.OnlyGradeCanAdd == false then
+			giveCarKeystoSociety()
+		else
+			ESX.ShowNotification(_U('not_boss'))
+		end
+	end, false)
+end
+
 if Config.BossCanWithDrawVehicle then
 
 	RegisterCommand(Config.CommandToTakeFromSociety, function()
 		
-		if ESX.PlayerData.job.grade_name == Config.GradeToTakeFromSociety then
+		if Config.OnlyGradeCanTake and ESX.PlayerData.job.grade_name == Config.GradeToTakeFromSociety then
+			getSocietyVehicle()
+		elseif Config.OnlyGradeCanTake == false then
 			getSocietyVehicle()
 		else
 			ESX.ShowNotification(_U('not_boss'))

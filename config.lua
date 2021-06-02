@@ -1,12 +1,14 @@
 Config = {}
 Config.Locale = "en"
-Config.CanTakeToSociety = true 
+Config.OnlyGradeCanAdd = true -- true = only users with job grade can add car to society || false = everyone can add cars to society
+Config.CanTakeToSociety = true -- true = enable global command || false = disable global command 
 Config.CommandToAddSociety = "addsociety" -- Command to rewrite your personal car to society car
-Config.GradeToAddsociety = "boss" 
+Config.GradeToAddsociety = "boss" -- Job Grade that can add car to society
 ---
-Config.BossCanWithDrawVehicle = true 
-Config.GradeToTakeFromSociety = "boss"
-Config.CommandToTakeFromSociety = "takesociety"
+Config.OnlyGradeCanTake = true -- Only person with specifc grade can take from society
+Config.BossCanWithDrawVehicle = true  -- Enable global command to take car from society
+Config.GradeToTakeFromSociety = "boss" -- Job Grade that can take from society
+Config.CommandToTakeFromSociety = "takesociety" -- Global command to take car from society. 
 
 Config.Main = {
 	MenuAlign = 'top-right', -- Menu Align. Current will show on Top Left.
