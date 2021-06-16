@@ -1,5 +1,6 @@
 Config = {}
 Config.Locale = "en"
+Config.Debug = true
 Config.OnlyGradeCanAdd = true -- true = only users with job grade can add car to society || false = everyone can add cars to society
 Config.CanTakeToSociety = true -- true = enable global command || false = disable global command 
 Config.CommandToAddSociety = "addsociety" -- Command to rewrite your personal car to society car
@@ -9,6 +10,11 @@ Config.OnlyGradeCanTake = true -- Only person with specifc grade can take from s
 Config.BossCanWithDrawVehicle = true  -- Enable global command to take car from society
 Config.GradeToTakeFromSociety = "boss" -- Job Grade that can take from society
 Config.CommandToTakeFromSociety = "takesociety" -- Global command to take car from society. 
+---
+Config.DrawHelp = '3DText' -- 3DText = DrawText3D || ESX = Default help notify
+Config.DecideToRepair = 'only_store' -- default = normal setting, where you get menu option || only_store = Store and don't repair and take money || repair_save_pay = Repair save an vehicle and pay it || broken_save_pay = player pay and vehicle will be broken 
+Config.EngineCheckTime = 10000
+
 
 Config.Main = {
 	MenuAlign = 'top-right', -- Menu Align. Current will show on Top Left.

@@ -10,8 +10,22 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 	end
 
+
+	if Config.Debug then
+		if Config.DrawHelp == 'ESX' then
+			print('Using ESX notify as drawing style')
+		elseif Config.DrawHelp == '3DText' then
+			print('Using 3D Text as drawing style')
+		end
+	end
+
+
 	while ESX.GetPlayerData().job == nil do
 		Citizen.Wait(10)
+	end
+
+	while not GetResourceState('esx_menu_default') == 'started' do
+		Citizen.Wait(200)
 	end
 
 	ESX.PlayerData = ESX.GetPlayerData()
@@ -34,6 +48,8 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
 
 	RefreshJobBlips()
 end)
+
+if 
 
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
@@ -1313,6 +1329,30 @@ function ReturnOwnedBoatsMenu()
 end
 -- End of Boat Code
 
+-- IDK if it will work xDD just .. thinking 
+--[[
+Citizen.CreateThread(function()
+	while ESX.PlayerLoaded do
+		Citizen.Wait(Config.EngineCheckTime)
+		local ped = GetPlayerPed(-1)
+		local current = GetPlayersLastVehicle(ped, true)
+		local engineHealth = GetVehicleEngineHealth(current)
+	
+		for k,v in pairs(engineHealth) do
+			if engineHealth < 990 then
+				--- dobré
+			elseif engineHealth < 550 then
+				--- poškožené
+			elseif engineHealth < 50 then
+				--- nepojizdé
+			end
+		end
+
+	end
+end)]]
+
+
+
 -- Start of Car Code
 function ListOwnedCarsMenu()
 	local elements = {}
@@ -1350,15 +1390,15 @@ function ListOwnedCarsMenu()
 						local vehicleName = GetLabelText(aheadVehName)
 						local plate = v.plate
 						local labelvehicle
-						local labelvehicle2 = ('<i><span style="color:rgb(234, 48, 48);">%s</span> - <span style="color:rgb(216, 245, 0);">%s</span> - </i>'):format(plate, vehicleName)
-						local labelvehicle3 = ('<i><span style="color:rgb(234, 48, 48);">%s</span> - <span style="color:rgb(216, 245, 0);">%s</span></i>'):format(plate, vehicleName)
+						local labelvehicle2 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span> - '):format(vehicleName, plate)
+						local labelvehicle3 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span>'):format(vehicleName, plate)
 						
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<i><span style="color:rgb(42, 255, 0);">%s</span></i>'):format(_U('loc_garage'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage')..' (Stav: POJÍZDNÉ )')
 							else
-								labelvehicle = labelvehicle2 .. ('<i><span style="color:red;">%s</span></i>'):format(_U('loc_pound'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:#5654e4; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
 							end
 						else
 							if v.stored then
@@ -1405,14 +1445,14 @@ function ListOwnedCarsMenu()
 						local vehicleName = GetLabelText(aheadVehName)
 						local plate = v.plate
 						local labelvehicle
-						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
-						local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+						local labelvehicle2 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span> - '):format(vehicleName, plate)
+						local labelvehicle3 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span>'):format(vehicleName, plate)
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage')..' (Stav: POJIZDNÉ)')
 							else
-								labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:#5654e4; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
 							end
 						else
 							if v.stored then
@@ -1672,8 +1712,9 @@ end)
 
 -- Repair Vehicles
 function RepairVehicle(apprasial, vehicle, vehicleProps)
-	ESX.UI.Menu.CloseAll()
+	if Config.DecideToRepair == 'default' then
 
+	ESX.UI.Menu.CloseAll()
 	local elements = {
 		{label = _U('return_vehicle').." ($"..apprasial..")", value = 'yes'},
 		{label = _U('see_mechanic'), value = 'no'}
@@ -1688,7 +1729,7 @@ function RepairVehicle(apprasial, vehicle, vehicleProps)
 
 		if data.current.value == 'yes' then
 			TriggerServerEvent('esx_advancedgarage:payhealth', apprasial)
-			vehicleProps.bodyHealth = 1000.0 -- must be a decimal value!!!
+			vehicleProps.bodyHealth = 1000.0
 			vehicleProps.engineHealth = 1000
 			StoreVehicle(vehicle, vehicleProps)
 		elseif data.current.value == 'no' then
@@ -1697,6 +1738,18 @@ function RepairVehicle(apprasial, vehicle, vehicleProps)
 	end, function(data, menu)
 		menu.close()
 	end)
+
+	elseif Config.DecideToRepair == 'broken_save_pay' then
+		TriggerServerEvent('esx_advancedgarage:payhealth', apprasial)
+		StoreVehicle(vehicle, vehicleProps)
+	elseif Config.DecideToRepair == 'repair_save_pay' then
+		TriggerServerEvent('esx_advancedgarage:payhealth', apprasial)
+		vehicleProps.bodyHealth = 1000.0 
+		vehicleProps.engineHealth = 1000
+		StoreVehicle(vehicle, vehicleProps)
+	elseif Config.DecideToRepair == 'only_store' then
+		StoreVehicle(vehicle, vehicleProps)
+	end
 end
 
 -- Store Vehicles
@@ -1752,7 +1805,7 @@ end
 -- Check Vehicles
 function DoesAPlayerDrivesVehicle(plate)
 	local isVehicleTaken = false
-	local players = ESX.Game.GetPlayers()
+	local players = ESX.Game.GetPlayers() --ESX.GetExtendedPlayers() - need ESX legacy, maybe next update
 	for i=1, #players, 1 do
 		local target = GetPlayerPed(players[i])
 		if target ~= PlayerPedId() then
@@ -1883,7 +1936,9 @@ Citizen.CreateThread(function()
 						if distance < Config.Ambulance.Markers.Points.x and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_garage_point'
 							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
                				DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							end
 						end
 					end
 
@@ -1901,7 +1956,9 @@ Citizen.CreateThread(function()
 						if distance2 < Config.Ambulance.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_store_point'
 							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
                 			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 						end
 					end
 
@@ -1919,7 +1976,9 @@ Citizen.CreateThread(function()
 						if distance3 < Config.Ambulance.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_store_point'
 							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
                 			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 						end
 					end
 
@@ -1943,7 +2002,9 @@ Citizen.CreateThread(function()
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_pound_point'
 						end
 						if distance < 2 then
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							end
 						end
 					end
 				end
@@ -1969,7 +2030,9 @@ Citizen.CreateThread(function()
 						if distance < Config.Police.Markers.Points.x  and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'police_garage_point'
 							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
                 			DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							end
 						end
 					end
 
@@ -1986,7 +2049,9 @@ Citizen.CreateThread(function()
 
 						if distance2 < Config.Police.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 							isInMarker, this_Garage, currentZone = true, v, 'police_store_point'
 						end
 					end
@@ -2004,7 +2069,9 @@ Citizen.CreateThread(function()
 
 						if distance3 < Config.Police.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 							isInMarker, this_Garage, currentZone = true, v, 'police_store_point'
 						end
 					end
@@ -2028,7 +2095,9 @@ Citizen.CreateThread(function()
 							isInMarker, this_Garage, currentZone = true, v, 'police_pound_point'
 						end
 						if distance < 2 then
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							end
 						end
 					end
 				end
@@ -2084,7 +2153,9 @@ Citizen.CreateThread(function()
 							isInMarker, this_Garage, currentZone = true, v, 'mechanic_pound_point'
 						end
 						if distance < 2 then
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							end
 						end
 					end
 				end
@@ -2107,7 +2178,9 @@ Citizen.CreateThread(function()
 
 					if distance < Config.Aircrafts.Markers.Points.x and IsPedOnFoot(player, true) then
 						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
                 		DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_garage_point'
 					end
 				end
@@ -2124,7 +2197,9 @@ Citizen.CreateThread(function()
 
 					if distance2 < Config.Aircrafts.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
                 		DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_store_point'
 					end
 				end
@@ -2144,7 +2219,9 @@ Citizen.CreateThread(function()
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_pound_point'
 					end
 					if distance < 2 then
+						if Config.DrawHelp == '3DText' then
 						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						end
 					end
 				end
 			end
@@ -2167,7 +2244,9 @@ Citizen.CreateThread(function()
 					if distance < Config.Boats.Markers.Points.x and IsPedOnFoot(player, true) then
 						isInMarker, this_Garage, currentZone = true, v, 'boat_garage_point'
 						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
                 		DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						end
 					end
 				end
 
@@ -2183,7 +2262,9 @@ Citizen.CreateThread(function()
 
 					if distance2 < Config.Boats.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
                 		DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'boat_store_point'
 					end
 				end
@@ -2203,7 +2284,9 @@ Citizen.CreateThread(function()
 						isInMarker, this_Garage, currentZone = true, v, 'boat_pound_point'
 					end
 					if distance < 2 then
+						if Config.DrawHelp == '3DText' then
 						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						end
 					end
 				end
 			end
@@ -2225,7 +2308,9 @@ Citizen.CreateThread(function()
 					if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
 						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'	
 						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
 						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						end
 					end
 				end
 
@@ -2241,7 +2326,9 @@ Citizen.CreateThread(function()
 
 					if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
 						DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 					end
 
@@ -2263,7 +2350,9 @@ Citizen.CreateThread(function()
 	
 						if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							end
 						end
 					end
 	
@@ -2277,7 +2366,9 @@ Citizen.CreateThread(function()
 						end
 	
 						if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+							if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 							isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 						end
 					end
@@ -2294,7 +2385,9 @@ Citizen.CreateThread(function()
 					end
 
 					if distance < 2 then
-						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						end
 					end
 
 					if distance < Config.Cars.Markers.Pounds.x then
@@ -2362,6 +2455,13 @@ Citizen.CreateThread(function()
 		local model = GetEntityModel(playerVeh)
 
 		if CurrentAction then
+			if Config.DrawHelp == 'ESX' then
+				ESX.ShowHelpNotification(CurrentActionMsg)
+			else
+				if Config.Debug then
+					print('Drawing ESX notification for garages')
+				end
+			end
 
 			if IsControlJustReleased(0, 38) then
 				
