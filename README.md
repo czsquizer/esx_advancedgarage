@@ -1,7 +1,7 @@
 # About esx_advancedgarage:
 Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020 & Ice Cube 🧊#7557
 
-# ** From update of debug and other shit.. this script didn't be tested on live server.. **
+# From update of debug and other shit.. this script didn't be tested on live server.. 
 
 # Creating Issues
 * Do NOT Delete the Pre-Written Text in the issue.
