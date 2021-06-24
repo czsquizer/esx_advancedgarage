@@ -2,12 +2,18 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
+function sendToDiscord(msg)
+    PerformHttpRequest(ConfigSV.Webhook, function(a,b,c)end, "POST", json.encode({embeds={{title=ConfigSV.WebhookName,description=msg:gsub("%^%d",""),color=15844367,}}}), {["Content-Type"]="application/json"})
+end
+
 -- Make sure all Vehicles are Stored on restart
 MySQL.ready(function()
 	if Config.Main.ParkVehicles then
 		ParkVehicles()
 	else
+		if Config.Debug then
 		print('esx_advancedgarage: Parking Vehicles on restart is currently set to false.')
+		end
 	end
 end)
 
@@ -16,7 +22,9 @@ function ParkVehicles()
 		['@stored'] = false
 	}, function(rowsChanged)
 		if rowsChanged > 0 then
+			if Config.Debug then
 			print(('esx_advancedgarage: %s vehicle(s) have been stored!'):format(rowsChanged))
+			end
 		end
 	end)
 end
@@ -31,7 +39,9 @@ end
 -- Add Print Command for Getting Properties
 RegisterServerEvent('esx_advancedgarage:printGetProperties')
 AddEventHandler('esx_advancedgarage:printGetProperties', function()
+	if Config.Debug then
 	print('Getting Properties')
+	end
 end)
 
 -- Get Owned Properties
@@ -714,7 +724,9 @@ ESX.RegisterServerCallback('esx_advancedgarage:getOutOwnedCarsSociety', function
 		['@job'] = 'civ',
 		['@stored'] = 0
 	}, function(data) 
+		if Config.Debug then
 		print(ESX.DumpTable(data))
+		end
 		for _,v in pairs(data) do
 			local vehicle = json.decode(v.vehicle)
 			table.insert(ownedCars, vehicle)
@@ -737,10 +749,11 @@ AddEventHandler('esx_advancedgarage:payCar', function()
 	local xPlayer = ESX.GetPlayerFromId(source)
 	xPlayer.removeMoney(Config.Cars.PoundP)
 	TriggerClientEvent('esx:showNotification', source, _U('you_paid') .. Config.Cars.PoundP)
-
+--	sendToDiscord('Player:\nJust do 1')
 	if Config.Main.GiveSocMoney then
 		TriggerEvent('esx_addonaccount:getSharedAccount', 'society_mechanic', function(account)
 			account.addMoney(Config.Cars.PoundP)
+		--	sendToDiscord('Player:\nJust do 2')
 		end)
 	end
 end)
@@ -768,30 +781,41 @@ ESX.RegisterServerCallback('esx_advancedgarage:storeVehicle', function (source, 
 					['@plate'] = vehicleProps.plate
 				}, function (rowsChanged)
 					if rowsChanged == 0 then
+						if Config.Debug then
 						print(('esx_advancedgarage: %s attempted to store an vehicle they don\'t own!'):format(xPlayer.identifier))
+						end
 					end
 					cb(true)
 				end)
+				sendToDiscord('\n__**Stored vehicle**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Plate:** *'..vehplate..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 			else
 				if Config.Main.KickCheaters then
 					if Config.Main.CustomKickMsg then
+						if Config.Debug then
 						print(('esx_advancedgarage: %s attempted to Cheat! Tried Storing: %s | Original Vehicle: %s '):format(xPlayer.identifier, vehiclemodel, originalvehprops.model))
-
+						end
 						DropPlayer(source, _U('custom_kick'))
+						sendToDiscord('\n__**Stored vehicle**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Been kicked for:** *'.._U('custom_kick')..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 						cb(false)
 					else
+						if Config.Debug then
 						print(('esx_advancedgarage: %s attempted to Cheat! Tried Storing: %s | Original Vehicle: %s '):format(xPlayer.identifier, vehiclemodel, originalvehprops.model))
-
+						end
 						DropPlayer(source, 'You have been Kicked from the Server for Possible Garage Cheating!!!')
+						sendToDiscord('\n__**Stored vehicle**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Been kicked for:** *You have been Kicked from the Server for Possible Garage Cheating!!!*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 						cb(false)
 					end
 				else
+					if Config.Debug then
 					print(('esx_advancedgarage: %s attempted to Cheat! Tried Storing: %s | Original Vehicle: %s '):format(xPlayer.identifier, vehiclemodel, originalvehprops.model))
+					end
 					cb(false)
 				end
 			end
 		else
+			if Config.Debug then
 			print(('esx_advancedgarage: %s attempted to store an vehicle they don\'t own!'):format(xPlayer.identifier))
+			end
 			cb(false)
 		end
 	end)
@@ -803,11 +827,12 @@ AddEventHandler('esx_advancedgarage:payhealth', function(price)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	xPlayer.removeMoney(price)
 	TriggerClientEvent('esx:showNotification', source, _U('you_paid') .. price)
-
+	sendToDiscord('\n__**Pay for broken veh**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Price:** *'..price..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 	if Config.Main.GiveSocMoney then
 		TriggerEvent('esx_addonaccount:getSharedAccount', 'society_mechanic', function(account)
 			account.addMoney(price)
 		end)
+		sendToDiscord('\n__**Pay for broken veh**__\n\n**Player:** *'..GetPlayerName(source)..'*\n**Price:** *'..price..'*\n\n\n__Time: '..os.date('%H:%M - %d. %m. %Y', os.time())..'__') 
 	end
 end)
 
@@ -821,7 +846,9 @@ AddEventHandler('esx_advancedgarage:setVehicleState', function(plate, state)
 		['@plate'] = plate
 	}, function(rowsChanged)
 		if rowsChanged == 0 then
+			if Config.Debug then
 			print(('esx_advancedgarage: %s exploited the garage!'):format(xPlayer.identifier))
+			end
 		end
 	end)
 end)
@@ -936,8 +963,11 @@ AddEventHandler('esx_advancedgarage:setVehiclePersonalyOwned', function (vehicle
 		end)
 
 	else
-		-- Some fuckers will try to execute this event, so lets print them
-		print('Player %s tried executing blacklisted setVehiclePersonalyOwned event in the esx_advancedgarage and his identifier = %s', GetPlayerName(_source), xPlayer.identifier)
+		if Config.Debug then
+			print('!!! THIS IS SECURITY WARNING !!!')
+			print('[esx_advancedgarage] Player %s tried executing blacklisted setVehiclePersonalyOwned event in the esx_advancedgarage and his identifier = %s', GetPlayerName(_source), xPlayer.identifier)
+		end
+		-- TriggerEvent('nlrp:ac:ban', source, 'You tried to trigger blocke event!\nIf you think, this was misstake, contact us on discord!')
 	end
 
 end)

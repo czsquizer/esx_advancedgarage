@@ -1,4 +1,4 @@
-fx_version 'adamant'
+fx_version 'cerulean'
 
 game 'gta5'
 
@@ -6,7 +6,7 @@ description 'ESX Advanced Garage'
 
 Author 'Human Tree92 | Velociti Entertainment'
 
-version '1.0.0'
+version '1.1.5'
 
 server_scripts {
 	'@mysql-async/lib/MySQL.lua',
@@ -14,7 +14,9 @@ server_scripts {
 	'locales/de.lua',
 	'locales/en.lua',
 	'locales/es.lua',
+	'locales/cs.lua',
 	'config.lua',
+	'config_sv.lua',
 	'server/main.lua'
 }
 
@@ -23,6 +25,7 @@ client_scripts {
 	'locales/de.lua',
 	'locales/en.lua',
 	'locales/es.lua',
+	'locales/cs.lua',
 	'config.lua',
 	'client/main.lua'
 }

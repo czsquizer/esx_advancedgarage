@@ -3,14 +3,29 @@ local HasAlreadyEnteredMarker, WasInPound, WasinJPound = false, false, false
 local LastZone, CurrentAction, CurrentActionMsg
 ESX = nil
 
+
 Citizen.CreateThread(function()
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(0)
 	end
 
+
+	if Config.Debug then
+		if Config.DrawHelp == 'ESX' then
+			print('Using ESX notify as drawing style')
+		elseif Config.DrawHelp == '3DText' then
+			print('Using 3D Text as drawing style')
+		end
+	end
+
+
 	while ESX.GetPlayerData().job == nil do
 		Citizen.Wait(10)
+	end
+
+	while not GetResourceState('esx_menu_default') == 'started' do
+		Citizen.Wait(200)
 	end
 
 	ESX.PlayerData = ESX.GetPlayerData()
@@ -33,6 +48,8 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
 
 	RefreshJobBlips()
 end)
+
+if 
 
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
@@ -1312,17 +1329,41 @@ function ReturnOwnedBoatsMenu()
 end
 -- End of Boat Code
 
+-- IDK if it will work xDD just .. thinking 
+--[[
+Citizen.CreateThread(function()
+	while ESX.PlayerLoaded do
+		Citizen.Wait(Config.EngineCheckTime)
+		local ped = GetPlayerPed(-1)
+		local current = GetPlayersLastVehicle(ped, true)
+		local engineHealth = GetVehicleEngineHealth(current)
+	
+		for k,v in pairs(engineHealth) do
+			if engineHealth < 990 then
+				--- dobré
+			elseif engineHealth < 550 then
+				--- poškožené
+			elseif engineHealth < 50 then
+				--- nepojizdé
+			end
+		end
+
+	end
+end)]]
+
+
+
 -- Start of Car Code
 function ListOwnedCarsMenu()
 	local elements = {}
 
 
 	if Config.Main.ShowVehLoc and Config.Main.Spacers then
-		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - <span style="color:red;">%s</span> |'):format(_U('plate'), _U('vehicle'), _U('location'))
+		local spacer = ('<b><u><span style="color:white;">%s</span> - <span style="color:white;">%s</span> - <span style="color:white;">%s</span></b></u>'):format(_U('plate'), _U('vehicle'), _U('location'))
 		table.insert(elements, {label = spacer, value = nil})
 	elseif Config.Main.ShowVehLoc == false and Config.Main.Spacers then
-		local spacer = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> |'):format(_U('plate'), _U('vehicle'))
-		table.insert(elements, {label = ('<span style="color:red;">%s</span>'):format(_U('spacer1')), value = nil})
+		local spacer = ('<span style="color:white;">%s</span> - <span style="color:white;">%s</span>'):format(_U('plate'), _U('vehicle'))
+		table.insert(elements, {label = ('<span style="color:white;">%s</span>'):format(_U('spacer1')), value = nil})
 		table.insert(elements, {label = spacer, value = nil})
 	end
 
@@ -1349,14 +1390,15 @@ function ListOwnedCarsMenu()
 						local vehicleName = GetLabelText(aheadVehName)
 						local plate = v.plate
 						local labelvehicle
-						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
-						local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+						local labelvehicle2 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span> - '):format(vehicleName, plate)
+						local labelvehicle3 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span>'):format(vehicleName, plate)
+						
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage')..' (Stav: POJÍZDNÉ )')
 							else
-								labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:#5654e4; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
 							end
 						else
 							if v.stored then
@@ -1380,6 +1422,7 @@ function ListOwnedCarsMenu()
 						if data2.current.value.stored then
 							menu.close()
 							SpawnVehicle(data2.current.value.vehicle, data2.current.value.plate)
+							exports['mythic_notify']:DoHudText('success', 'Vozidlo vytaženo z garáže')
 						else
 							ESX.ShowNotification(_U('car_is_impounded'))
 						end
@@ -1402,14 +1445,14 @@ function ListOwnedCarsMenu()
 						local vehicleName = GetLabelText(aheadVehName)
 						local plate = v.plate
 						local labelvehicle
-						local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(plate, vehicleName)
-						local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(plate, vehicleName)
+						local labelvehicle2 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span> - '):format(vehicleName, plate)
+						local labelvehicle3 = ('<span style="color:green; font-size: 16px;">%s</span> - <span style="color:darkgoldenrod; font-size: 16px;">(%s)</span>'):format(vehicleName, plate)
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format(_U('loc_garage'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage')..' (Stav: POJIZDNÉ)')
 							else
-								labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format(_U('loc_pound'))
+								labelvehicle = labelvehicle2 .. ('<span style="color:#5654e4; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
 							end
 						else
 							if v.stored then
@@ -1646,10 +1689,11 @@ end
 -- WasInPound & WasinJPound Code
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(0)
+		local sleep = 2000
 
 		if Config.Main.PoundTimer then
 			if WasInPound then
+				sleep = 1
 				Citizen.Wait(Config.Main.PoundWait * 60000)
 				WasInPound = false
 			end
@@ -1657,17 +1701,20 @@ Citizen.CreateThread(function()
 
 		if Config.Main.JPoundTimer then
 			if WasinJPound then
+				sleep = 1
 				Citizen.Wait(Config.Main.JPoundWait * 60000)
 				WasinJPound = false
 			end
 		end
+		Wait(sleep)
 	end
 end)
 
 -- Repair Vehicles
 function RepairVehicle(apprasial, vehicle, vehicleProps)
-	ESX.UI.Menu.CloseAll()
+	if Config.DecideToRepair == 'default' then
 
+	ESX.UI.Menu.CloseAll()
 	local elements = {
 		{label = _U('return_vehicle').." ($"..apprasial..")", value = 'yes'},
 		{label = _U('see_mechanic'), value = 'no'}
@@ -1682,7 +1729,7 @@ function RepairVehicle(apprasial, vehicle, vehicleProps)
 
 		if data.current.value == 'yes' then
 			TriggerServerEvent('esx_advancedgarage:payhealth', apprasial)
-			vehicleProps.bodyHealth = 1000.0 -- must be a decimal value!!!
+			vehicleProps.bodyHealth = 1000.0
 			vehicleProps.engineHealth = 1000
 			StoreVehicle(vehicle, vehicleProps)
 		elseif data.current.value == 'no' then
@@ -1691,6 +1738,18 @@ function RepairVehicle(apprasial, vehicle, vehicleProps)
 	end, function(data, menu)
 		menu.close()
 	end)
+
+	elseif Config.DecideToRepair == 'broken_save_pay' then
+		TriggerServerEvent('esx_advancedgarage:payhealth', apprasial)
+		StoreVehicle(vehicle, vehicleProps)
+	elseif Config.DecideToRepair == 'repair_save_pay' then
+		TriggerServerEvent('esx_advancedgarage:payhealth', apprasial)
+		vehicleProps.bodyHealth = 1000.0 
+		vehicleProps.engineHealth = 1000
+		StoreVehicle(vehicle, vehicleProps)
+	elseif Config.DecideToRepair == 'only_store' then
+		StoreVehicle(vehicle, vehicleProps)
+	end
 end
 
 -- Store Vehicles
@@ -1746,7 +1805,7 @@ end
 -- Check Vehicles
 function DoesAPlayerDrivesVehicle(plate)
 	local isVehicleTaken = false
-	local players = ESX.Game.GetPlayers()
+	local players = ESX.Game.GetPlayers() --ESX.GetExtendedPlayers() - need ESX legacy, maybe next update
 	for i=1, #players, 1 do
 		local target = GetPlayerPed(players[i])
 		if target ~= PlayerPedId() then
@@ -1854,7 +1913,7 @@ end)
 -- Enter / Exit marker events & Draw Markers
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(0)
+		local sleep = 2000
 		local playerCoords = GetEntityCoords(PlayerPedId())
 		local isInMarker, letSleep, currentZone = false, true
 
@@ -1864,42 +1923,65 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 					local distance2 = #(playerCoords - v.Deleter)
 					local distance3 = #(playerCoords - v.Deleter2)
+					local coords = GetEntityCoords(GetPlayerPed(-1))
+        			local player = GetPlayerPed(-1)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
-						if Config.Ambulance.Markers.Points.Type ~= -1 then
-							DrawMarker(Config.Ambulance.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Points.x, Config.Ambulance.Markers.Points.y, Config.Ambulance.Markers.Points.z, Config.Ambulance.Markers.Points.r, Config.Ambulance.Markers.Points.g, Config.Ambulance.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
+						if Config.Ambulance.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
+						--	DrawMarker(Config.Ambulance.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Points.x, Config.Ambulance.Markers.Points.y, Config.Ambulance.Markers.Points.z, Config.Ambulance.Markers.Points.r, Config.Ambulance.Markers.Points.g, Config.Ambulance.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
 						end
 
-						if distance < Config.Ambulance.Markers.Points.x then
+						if distance < Config.Ambulance.Markers.Points.x and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_garage_point'
+							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
+               				DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							end
 						end
 					end
 
 					if distance2 < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
-						if Config.Ambulance.Markers.Delete.Type ~= -1 then
-							DrawMarker(Config.Ambulance.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Delete.x, Config.Ambulance.Markers.Delete.y, Config.Ambulance.Markers.Delete.z, Config.Ambulance.Markers.Delete.r, Config.Ambulance.Markers.Delete.g, Config.Ambulance.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+						if Config.Ambulance.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						--	DrawMarker(Config.Ambulance.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Delete.x, Config.Ambulance.Markers.Delete.y, Config.Ambulance.Markers.Delete.z, Config.Ambulance.Markers.Delete.r, Config.Ambulance.Markers.Delete.g, Config.Ambulance.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+							DisableControlAction(0, 22, true)
+                			DrawMarker(Config.Ambulance.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Ambulance.Markers.Delete.r, Config.Ambulance.Markers.Delete.g, Config.Ambulance.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+						else
+							DrawMarker(Config.Ambulance.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Ambulance.Markers.Points.r, Config.Ambulance.Markers.Points.g, Config.Ambulance.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 						end
 
-						if distance2 < Config.Ambulance.Markers.Delete.x then
+						if distance2 < Config.Ambulance.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_store_point'
+							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
+                			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 						end
 					end
 
 					if distance3 < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
-						if Config.Ambulance.Markers.Delete.Type ~= -1 then
-							DrawMarker(Config.Ambulance.Markers.Delete.Type, v.Deleter2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Delete.x, Config.Ambulance.Markers.Delete.y, Config.Ambulance.Markers.Delete.z, Config.Ambulance.Markers.Delete.r, Config.Ambulance.Markers.Delete.g, Config.Ambulance.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+						if Config.Ambulance.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						--	DrawMarker(Config.Ambulance.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Delete.x, Config.Ambulance.Markers.Delete.y, Config.Ambulance.Markers.Delete.z, Config.Ambulance.Markers.Delete.r, Config.Ambulance.Markers.Delete.g, Config.Ambulance.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+							DisableControlAction(0, 22, true)
+                			DrawMarker(Config.Ambulance.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Ambulance.Markers.Delete.r, Config.Ambulance.Markers.Delete.g, Config.Ambulance.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+						else
+							DrawMarker(Config.Ambulance.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Ambulance.Markers.Points.r, Config.Ambulance.Markers.Points.g, Config.Ambulance.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 						end
 
-						if distance3 < Config.Ambulance.Markers.Delete.x then
+						if distance3 < Config.Ambulance.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_store_point'
+							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
+                			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 						end
 					end
+
 				end
 			end
 		end
@@ -1910,7 +1992,7 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Ambulance.Markers.Pounds.Type ~= -1 then
 							DrawMarker(Config.Ambulance.Markers.Pounds.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Ambulance.Markers.Pounds.x, Config.Ambulance.Markers.Pounds.y, Config.Ambulance.Markers.Pounds.z, Config.Ambulance.Markers.Pounds.r, Config.Ambulance.Markers.Pounds.g, Config.Ambulance.Markers.Pounds.b, 100, false, true, 2, false, nil, nil, false)
@@ -1918,6 +2000,11 @@ Citizen.CreateThread(function()
 
 						if distance < Config.Ambulance.Markers.Pounds.x then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_pound_point'
+						end
+						if distance < 2 then
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							end
 						end
 					end
 				end
@@ -1930,39 +2017,61 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 					local distance2 = #(playerCoords - v.Deleter)
 					local distance3 = #(playerCoords - v.Deleter2)
+					local coords = GetEntityCoords(GetPlayerPed(-1))
+       				local player = GetPlayerPed(-1)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
-						if Config.Police.Markers.Points.Type ~= -1 then
-							DrawMarker(Config.Police.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Points.x, Config.Police.Markers.Points.y, Config.Police.Markers.Points.z, Config.Police.Markers.Points.r, Config.Police.Markers.Points.g, Config.Police.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
+						if Config.Police.Markers.Points.Type ~= -1  and IsPedOnFoot(player, true) then
+						--	DrawMarker(Config.Police.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Points.x, Config.Police.Markers.Points.y, Config.Police.Markers.Points.z, Config.Police.Markers.Points.r, Config.Police.Markers.Points.g, Config.Police.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
 						end
 
-						if distance < Config.Police.Markers.Points.x then
+						if distance < Config.Police.Markers.Points.x  and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'police_garage_point'
+							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
+                			DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							end
 						end
 					end
 
 					if distance2 < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
-						if Config.Police.Markers.Delete.Type ~= -1 then
-							DrawMarker(Config.Police.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Delete.x, Config.Police.Markers.Delete.y, Config.Police.Markers.Delete.z, Config.Police.Markers.Delete.r, Config.Police.Markers.Delete.g, Config.Police.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+						if Config.Police.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						--	DrawMarker(Config.Police.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Delete.x, Config.Police.Markers.Delete.y, Config.Police.Markers.Delete.z, Config.Police.Markers.Delete.r, Config.Police.Markers.Delete.g, Config.Police.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+							DisableControlAction(0, 22, true)
+                			DrawMarker(Config.Police.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Police.Markers.Delete.r, Config.Police.Markers.Delete.g, Config.Police.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+						else
+							DrawMarker(Config.Police.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Police.Markers.Points.r, Config.Police.Markers.Points.g, Config.Police.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 						end
 
-						if distance2 < Config.Police.Markers.Delete.x then
+						if distance2 < Config.Police.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 							isInMarker, this_Garage, currentZone = true, v, 'police_store_point'
 						end
 					end
 
 					if distance3 < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
-						if Config.Police.Markers.Delete.Type ~= -1 then
-							DrawMarker(Config.Police.Markers.Delete.Type, v.Deleter2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Delete.x, Config.Police.Markers.Delete.y, Config.Police.Markers.Delete.z, Config.Police.Markers.Delete.r, Config.Police.Markers.Delete.g, Config.Police.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+						if Config.Police.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						--	DrawMarker(Config.Police.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Delete.x, Config.Police.Markers.Delete.y, Config.Police.Markers.Delete.z, Config.Police.Markers.Delete.r, Config.Police.Markers.Delete.g, Config.Police.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+							DisableControlAction(0, 22, true)
+                			DrawMarker(Config.Police.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Police.Markers.Delete.r, Config.Police.Markers.Delete.g, Config.Police.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+						else
+							DrawMarker(Config.Police.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Police.Markers.Points.r, Config.Police.Markers.Points.g, Config.Police.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 						end
 
-						if distance3 < Config.Police.Markers.Delete.x then
+						if distance3 < Config.Police.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+							DisableControlAction(0, 22, true)
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
 							isInMarker, this_Garage, currentZone = true, v, 'police_store_point'
 						end
 					end
@@ -1976,7 +2085,7 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Police.Markers.Pounds.Type ~= -1 then
 							DrawMarker(Config.Police.Markers.Pounds.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Police.Markers.Pounds.x, Config.Police.Markers.Pounds.y, Config.Police.Markers.Pounds.z, Config.Police.Markers.Pounds.r, Config.Police.Markers.Pounds.g, Config.Police.Markers.Pounds.b, 100, false, true, 2, false, nil, nil, false)
@@ -1984,6 +2093,11 @@ Citizen.CreateThread(function()
 
 						if distance < Config.Police.Markers.Pounds.x then
 							isInMarker, this_Garage, currentZone = true, v, 'police_pound_point'
+						end
+						if distance < 2 then
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							end
 						end
 					end
 				end
@@ -1997,7 +2111,7 @@ Citizen.CreateThread(function()
 					local distance2 = #(playerCoords - v.Deleter)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Mechanic.Markers.Points.Type ~= -1 then
 							DrawMarker(Config.Mechanic.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Mechanic.Markers.Points.x, Config.Mechanic.Markers.Points.y, Config.Mechanic.Markers.Points.z, Config.Mechanic.Markers.Points.r, Config.Mechanic.Markers.Points.g, Config.Mechanic.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
@@ -2009,7 +2123,7 @@ Citizen.CreateThread(function()
 					end
 
 					if distance2 < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Mechanic.Markers.Delete.Type ~= -1 then
 							DrawMarker(Config.Mechanic.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Mechanic.Markers.Delete.x, Config.Mechanic.Markers.Delete.y, Config.Mechanic.Markers.Delete.z, Config.Mechanic.Markers.Delete.r, Config.Mechanic.Markers.Delete.g, Config.Mechanic.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
@@ -2029,7 +2143,7 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Mechanic.Markers.Pounds.Type ~= -1 then
 							DrawMarker(Config.Mechanic.Markers.Pounds.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Mechanic.Markers.Pounds.x, Config.Mechanic.Markers.Pounds.y, Config.Mechanic.Markers.Pounds.z, Config.Mechanic.Markers.Pounds.r, Config.Mechanic.Markers.Pounds.g, Config.Mechanic.Markers.Pounds.b, 100, false, true, 2, false, nil, nil, false)
@@ -2037,6 +2151,11 @@ Citizen.CreateThread(function()
 
 						if distance < Config.Mechanic.Markers.Pounds.x then
 							isInMarker, this_Garage, currentZone = true, v, 'mechanic_pound_point'
+						end
+						if distance < 2 then
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							end
 						end
 					end
 				end
@@ -2047,27 +2166,40 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.AircraftGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
+				local coords = GetEntityCoords(GetPlayerPed(-1))
+        		local player = GetPlayerPed(-1)
 
 				if distance < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
-					if Config.Aircrafts.Markers.Points.Type ~= -1 then
-						DrawMarker(Config.Aircrafts.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Aircrafts.Markers.Points.x, Config.Aircrafts.Markers.Points.y, Config.Aircrafts.Markers.Points.z, Config.Aircrafts.Markers.Points.r, Config.Aircrafts.Markers.Points.g, Config.Aircrafts.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Aircrafts.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
+					--	DrawMarker(Config.Aircrafts.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Aircrafts.Markers.Points.x, Config.Aircrafts.Markers.Points.y, Config.Aircrafts.Markers.Points.z, Config.Aircrafts.Markers.Points.r, Config.Aircrafts.Markers.Points.g, Config.Aircrafts.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
 					end
 
-					if distance < Config.Aircrafts.Markers.Points.x then
+					if distance < Config.Aircrafts.Markers.Points.x and IsPedOnFoot(player, true) then
+						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
+                		DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_garage_point'
 					end
 				end
 
 				if distance2 < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
-					if Config.Aircrafts.Markers.Delete.Type ~= -1 then
-						DrawMarker(Config.Aircrafts.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Aircrafts.Markers.Delete.x, Config.Aircrafts.Markers.Delete.y, Config.Aircrafts.Markers.Delete.z, Config.Aircrafts.Markers.Delete.r, Config.Aircrafts.Markers.Delete.g, Config.Aircrafts.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Aircrafts.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						DrawMarker(Config.Aircrafts.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Aircrafts.Markers.Delete.r, Config.Aircrafts.Markers.Delete.g, Config.Aircrafts.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+					else
+						DrawMarker(Config.Aircrafts.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Aircrafts.Markers.Points.r, Config.Aircrafts.Markers.Points.g, Config.Aircrafts.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 					end
 
-					if distance2 < Config.Aircrafts.Markers.Delete.x then
+					if distance2 < Config.Aircrafts.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
+                		DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_store_point'
 					end
 				end
@@ -2077,7 +2209,7 @@ Citizen.CreateThread(function()
 				local distance = #(playerCoords - v.Marker)
 
 				if distance < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
 					if Config.Aircrafts.Markers.Pounds.Type ~= -1 then
 						DrawMarker(Config.Aircrafts.Markers.Pounds.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Aircrafts.Markers.Pounds.x, Config.Aircrafts.Markers.Pounds.y, Config.Aircrafts.Markers.Pounds.z, Config.Aircrafts.Markers.Pounds.r, Config.Aircrafts.Markers.Pounds.g, Config.Aircrafts.Markers.Pounds.b, 100, false, true, 2, false, nil, nil, false)
@@ -2085,6 +2217,11 @@ Citizen.CreateThread(function()
 
 					if distance < Config.Aircrafts.Markers.Pounds.x then
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_pound_point'
+					end
+					if distance < 2 then
+						if Config.DrawHelp == '3DText' then
+						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						end
 					end
 				end
 			end
@@ -2094,27 +2231,40 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.BoatGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
+				local coords = GetEntityCoords(GetPlayerPed(-1))
+        		local player = GetPlayerPed(-1)
 				
 				if distance < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
-					if Config.Boats.Markers.Points.Type ~= -1 then
-						DrawMarker(Config.Boats.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Boats.Markers.Points.x, Config.Boats.Markers.Points.y, Config.Boats.Markers.Points.z, Config.Boats.Markers.Points.r, Config.Boats.Markers.Points.g, Config.Boats.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Boats.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
+					--	DrawMarker(Config.Boats.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Boats.Markers.Points.x, Config.Boats.Markers.Points.y, Config.Boats.Markers.Points.z, Config.Boats.Markers.Points.r, Config.Boats.Markers.Points.g, Config.Boats.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
 					end
 
-					if distance < Config.Boats.Markers.Points.x then
+					if distance < Config.Boats.Markers.Points.x and IsPedOnFoot(player, true) then
 						isInMarker, this_Garage, currentZone = true, v, 'boat_garage_point'
+						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
+                		DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						end
 					end
 				end
 
 				if distance2 < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
-					if Config.Boats.Markers.Delete.Type ~= -1 then
-						DrawMarker(Config.Boats.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Boats.Markers.Delete.x, Config.Boats.Markers.Delete.y, Config.Boats.Markers.Delete.z, Config.Boats.Markers.Delete.r, Config.Boats.Markers.Delete.g, Config.Boats.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Boats.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						DrawMarker(Config.Boats.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+					--	DrawMarker(Config.Boats.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Boats.Markers.Delete.x, Config.Boats.Markers.Delete.y, Config.Boats.Markers.Delete.z, Config.Boats.Markers.Delete.r, Config.Boats.Markers.Delete.g, Config.Boats.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+					else
+						DrawMarker(Config.Boats.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Boats.Markers.Points.r, Config.Boats.Markers.Points.g, Config.Boats.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 					end
 
-					if distance2 < Config.Boats.Markers.Delete.x then
+					if distance2 < Config.Boats.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
+                		DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'boat_store_point'
 					end
 				end
@@ -2124,7 +2274,7 @@ Citizen.CreateThread(function()
 				local distance = #(playerCoords - v.Marker)
 
 				if distance < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
 					if Config.Boats.Markers.Pounds.Type ~= -1 then
 						DrawMarker(Config.Boats.Markers.Pounds.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Boats.Markers.Pounds.x, Config.Boats.Markers.Pounds.y, Config.Boats.Markers.Pounds.z, Config.Boats.Markers.Pounds.r, Config.Boats.Markers.Pounds.g, Config.Boats.Markers.Pounds.b, 100, false, true, 2, false, nil, nil, false)
@@ -2132,6 +2282,11 @@ Citizen.CreateThread(function()
 
 					if distance < Config.Boats.Markers.Pounds.x then
 						isInMarker, this_Garage, currentZone = true, v, 'boat_pound_point'
+					end
+					if distance < 2 then
+						if Config.DrawHelp == '3DText' then
+						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						end
 					end
 				end
 			end
@@ -2141,40 +2296,98 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.CarGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
+				local coords = GetEntityCoords(GetPlayerPed(-1))
+				local player = GetPlayerPed(-1)
 
 				if distance < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
-					if Config.Cars.Markers.Points.Type ~= -1 then
-						DrawMarker(Config.Cars.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Cars.Markers.Points.x, Config.Cars.Markers.Points.y, Config.Cars.Markers.Points.z, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Cars.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
 					end
 
-					if distance < Config.Cars.Markers.Points.x then
-						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
+					if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
+						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'	
+						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
+						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						end
 					end
 				end
 
 				if distance2 < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
-					if Config.Cars.Markers.Delete.Type ~= -1 then
-						DrawMarker(Config.Cars.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Cars.Markers.Delete.x, Config.Cars.Markers.Delete.y, Config.Cars.Markers.Delete.z, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
+					if Config.Cars.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						DrawMarker(21, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+					else
+						DrawMarker(21, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 					end
 
-					if distance2 < Config.Cars.Markers.Delete.x then
+					if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+						DisableControlAction(0, 22, true)
+						if Config.DrawHelp == '3DText' then
+						DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						end
 						isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 					end
+
 				end
 			end
+
+			if Config.BezBlipu then
+				for k,v in pairs(Config.BezBlipu) do
+					local distance = #(playerCoords - v.Marker)
+					local distance2 = #(playerCoords - v.Deleter)
+					local coords = GetEntityCoords(GetPlayerPed(-1))
+					local player = GetPlayerPed(-1)
+	
+					if distance < Config.Main.DrawDistance then
+						sleep = 1
+	
+						if Config.Cars.Markers.Points.Type ~= -1 and IsPedOnFoot(player, true) then
+						end
+	
+						if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
+							isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							end
+						end
+					end
+	
+					if distance2 < Config.Main.DrawDistance then
+						sleep = 1
+	
+						if Config.Cars.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
+							DrawMarker(21, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
+						else
+							DrawMarker(21, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
+						end
+	
+						if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
+							if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							end
+							isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
+						end
+					end
+				end
 
 			for k,v in pairs(Config.CarPounds) do
 				local distance = #(playerCoords - v.Marker)
 
 				if distance < Config.Main.DrawDistance then
-					letSleep = false
+					sleep = 1
 
 					if Config.Cars.Markers.Pounds.Type ~= -1 then
 						DrawMarker(Config.Cars.Markers.Pounds.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Cars.Markers.Pounds.x, Config.Cars.Markers.Pounds.y, Config.Cars.Markers.Pounds.z, Config.Cars.Markers.Pounds.r, Config.Cars.Markers.Pounds.g, Config.Cars.Markers.Pounds.b, 100, false, true, 2, false, nil, nil, false)
+					end
+
+					if distance < 2 then
+						if Config.DrawHelp == '3DText' then
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						end
 					end
 
 					if distance < Config.Cars.Markers.Pounds.x then
@@ -2184,6 +2397,7 @@ Citizen.CreateThread(function()
 			end
 		end
 
+
 		if Config.Pvt.Garages then
 			for k,v in pairs(Config.PrivateCarGarages) do
 				if not v.Private or has_value(userProperties, v.Private) then
@@ -2191,7 +2405,7 @@ Citizen.CreateThread(function()
 					local distance2 = #(playerCoords - v.Deleter)
 
 					if distance < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Pvt.Markers.Points.Type ~= -1 then
 							DrawMarker(Config.Pvt.Markers.Points.Type, v.Marker, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Pvt.Markers.Points.x, Config.Pvt.Markers.Points.y, Config.Pvt.Markers.Points.z, Config.Pvt.Markers.Points.r, Config.Pvt.Markers.Points.g, Config.Pvt.Markers.Points.b, 100, false, true, 2, false, nil, nil, false)
@@ -2203,7 +2417,7 @@ Citizen.CreateThread(function()
 					end
 
 					if distance2 < Config.Main.DrawDistance then
-						letSleep = false
+						sleep = 1
 
 						if Config.Pvt.Markers.Delete.Type ~= -1 then
 							DrawMarker(Config.Pvt.Markers.Delete.Type, v.Deleter, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.Pvt.Markers.Delete.x, Config.Pvt.Markers.Delete.y, Config.Pvt.Markers.Delete.z, Config.Pvt.Markers.Delete.r, Config.Pvt.Markers.Delete.g, Config.Pvt.Markers.Delete.b, 100, false, true, 2, false, nil, nil, false)
@@ -2227,11 +2441,9 @@ Citizen.CreateThread(function()
 			HasAlreadyEnteredMarker = false
 			TriggerEvent('esx_advancedgarage:hasExitedMarker', LastZone)
 		end
-
-		if letSleep then
-			Citizen.Wait(500)
-		end
+		Wait(sleep)
 	end
+end
 end)
 
 -- Key Controls
@@ -2243,10 +2455,16 @@ Citizen.CreateThread(function()
 		local model = GetEntityModel(playerVeh)
 
 		if CurrentAction then
-			ESX.ShowHelpNotification(CurrentActionMsg)
+			if Config.DrawHelp == 'ESX' then
+				ESX.ShowHelpNotification(CurrentActionMsg)
+			else
+				if Config.Debug then
+					print('Drawing ESX notification for garages')
+				end
+			end
 
 			if IsControlJustReleased(0, 38) then
-
+				
 				if CurrentAction == 'ambulance_garage_point' then
 					if ESX.PlayerData.job and ESX.PlayerData.job.name == 'ambulance' then
 						ListOwnedAmbulanceMenu()
@@ -2376,6 +2594,7 @@ Citizen.CreateThread(function()
 		end
 	end
 end)
+
 
 -- Create Blips
 function CreateBlips()
@@ -2631,12 +2850,6 @@ function RefreshJobBlips()
 	end
 end
 
-RegisterCommand("changeownertosociety", function()
-	
-	giveCarKeystoSociety()
-	
-end, false)
-
 function giveCarKeystoSociety()
 	local playerPed = PlayerPedId()
 	local coords    = GetEntityCoords(playerPed)
@@ -2656,8 +2869,9 @@ function giveCarKeystoSociety()
 		elements = {
 			{label = _U('no'), value = 0},
 			{label = _U('no'),   value = 1},
+			{label = _U('yes'),   value = 'yes'},
 			{label = _U('no'), value = 2},
-			{label = _U('yes'),   value = 'yes'}
+			{label = _U('no'), value = 3}
 		}}, function(data, menu)
 		menu.close()
 
@@ -2678,11 +2892,25 @@ function giveCarKeystoSociety()
 	end)
 end
 
+if Config.CanTakeToSociety then
+	RegisterCommand(Config.CommandToAddSociety, function()
+		if Config.OnlyGradeCanAdd and ESX.PlayerData.job.grade_name == Config.GradeToAddsociety then
+			giveCarKeystoSociety()
+		elseif Config.OnlyGradeCanAdd == false then
+			giveCarKeystoSociety()
+		else
+			ESX.ShowNotification(_U('not_boss'))
+		end
+	end, false)
+end
+
 if Config.BossCanWithDrawVehicle then
 
-	RegisterCommand("withdrawcar", function()
+	RegisterCommand(Config.CommandToTakeFromSociety, function()
 		
-		if ESX.PlayerData.job.grade_name == "boss" then
+		if Config.OnlyGradeCanTake and ESX.PlayerData.job.grade_name == Config.GradeToTakeFromSociety then
+			getSocietyVehicle()
+		elseif Config.OnlyGradeCanTake == false then
 			getSocietyVehicle()
 		else
 			ESX.ShowNotification(_U('not_boss'))
@@ -2709,28 +2937,40 @@ if Config.BossCanWithDrawVehicle then
 			elements = {
 				{label = _U('no'), value = 0},
 				{label = _U('no'),   value = 1},
+				{label = _U('yes'),   value = 'yes'},
 				{label = _U('no'), value = 2},
-				{label = _U('yes'),   value = 'yes'}
+				{label = _U('no'), value = 3},
 			}}, function(data, menu)
 			menu.close()
 	
 			if data.current.value == 'yes' then
-	
 					ESX.TriggerServerCallback('esx_advancedgarage:requestSocietyCars', function(isOwnedVehicle)
-	
 						if isOwnedVehicle then
-						
 							ESX.ShowNotification(_U('withdrawing_car'))
 							TriggerServerEvent('esx_advancedgarage:setVehiclePersonalyOwned', vehicleProps)
-
 						end
-					
 				end, plate)
-	
 			end
-	
 		end)
 	end
+end
 
-
+function DrawText3Dx(x,y,z, text)
+	local onScreen, _x, _y = World3dToScreen2d(x, y, z)
+	local px, py, pz = table.unpack(GetGameplayCamCoords())
+    
+    if onScreen then
+      SetTextScale(0.65, 0.41)
+      SetTextFont(4)
+  
+      SetTextDropshadow(10, 100, 100, 100, 255)
+      SetTextProportional(1)
+      SetTextColour(255, 255, 255, 215)
+      SetTextEntry("STRING")
+      SetTextCentre(1)
+      AddTextComponentString(text)
+      DrawText(_x,_y)
+        local factor = (string.len(text)) / 320
+        DrawRect(_x,_y+0.0135, 0.025+ factor, 0.03, 0, 0, 0, 68)
+    end
 end
