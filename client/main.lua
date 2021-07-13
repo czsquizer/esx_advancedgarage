@@ -49,8 +49,6 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
 	RefreshJobBlips()
 end)
 
-if 
-
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
     ESX.PlayerData.job = job
