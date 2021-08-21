@@ -1,5 +1,5 @@
 # About esx_advancedgarage:
-Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020 & Ice Cube 🧊#7557
+Advanced Garage System for ESX Legacy - Made by Human Tree92 edited (forked) by Squizer#3020 & Ice Cube 🧊#7557
 
 # From update of debug and other shit.. this script didn't be tested on live server.. 
 
@@ -18,12 +18,11 @@ Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti
 
 # Requirements:
 * Required:
-  * [es_extended V1 Final](https://github.com/esx-framework/es_extended/tree/v1-final) or [extendedmode](https://github.com/extendedmode/extendedmode)
-  * [esx_property](https://github.com/ESX-Org/esx_property)
+  * [es_extended Legacy](https://github.com/esx-framework/esx-legacy)
+  * [esx_property](https://github.com/esx-framework/esx-legacy/tree/main/%5Besx_addons%5D/esx_property)
 * Optional:
-  * [esx_advancedvehicleshop](https://github.com/HumanTree92/esx_advancedvehicleshop)
-  * [esx_vehicleshop](https://github.com/ESX-Org/esx_vehicleshop)
-  * [esx_mechanicjob](https://github.com/ESX-Org/esx_mechanicjob)
+  * [esx_vehicleshop](https://github.com/esx-framework/esx-legacy/tree/main/%5Besx_addons%5D/esx_vehicleshop)
+  * [esx_mechanicjob](https://github.com/esx-framework/esx-legacy/tree/main/%5Besx_addons%5D/esx_mechanicjob)
 
 # Download & Installation:
 1) Download the .zip.
@@ -32,63 +31,6 @@ Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti
 4) Edit the `config.lua` before starting the script. By default everything is turned off.
 5) Place `esx_advancedgarage` in your ESX Directory
 6) Add `start esx_advancedgarage` to your server.cfg
-
-# Other Scripts made by Squizer
-* [sqz_unijob](https://forum.cfx.re/t/esx-sqz-unijob-advanced-system-for-easy-adding-jobs/2100467) - Script for adding multiple jobs into 1 script just by edditing config
-* [sqz_drugs](https://forum.cfx.re/t/esx-sqz-drugs-advanced-drug-system/2167691) - Complete system for drugs, planting, harvesting, watering, processing and dealing drugs
-* [scb_rpmenu](https://forum.cfx.re/t/esx-scb-rpmenu-facilitates-all-works-player-menu-admin-menu/2110753) - Complete RP menu with all features you could need for your RP server
-* [sqz_switchjob](https://github.com/czsquizer/switchjob) - Script for switching and having multiple jobs
-* [sqz_carmenu](https://github.com/czsquizer/sqz_carmenu) - Script for all the car features you would ever need
-* [sqz_hospital](https://github.com/czsquizer/sqz_hospital) - Script that allows player heal themselves in the hospital in case there are no doctors on your server
-* [sqz_itemwhitelist](https://github.com/czsquizer/sqz_itemwhitelist) - Prop and vehicle whitelist/blacklist to prevent hackers spamming your server with entities
-* [others](https://github.com/czsquizer?tab=repositories) - You can find there my forks of other scripts, check them as well
-
-
-# KNOWN BUGS:
-* There is a Limit on how many Vehicles that can be in each garage. For me it was 36 Vehicles in the Car Garage but after that i couldn't pull anymore out. You can still buy more Boats & Planes if the Car Garage is at 36.
-* It is Possible to Duplicate Vehicles if the resource is restarted while vehicles are out.
-* Might not work well when using the Car Dealer Job. (Haven't Tested this)
-* If you are having problems with the SQL from esx_vehicleshop try the SQL from here. If a problem with the SQL from here try esx_vehicleshop SQL. If still having problems please submit an issue.
-* May bugging players, when holding space in menu, while vehicle is loading.
-
-# Other Scripts:
-If you like this please check out some of my other stuff like
-* [esx_advancedbanking](https://github.com/HumanTree92/esx_advancedbanking)
-* [esx_advancedfuel](https://github.com/HumanTree92/esx_advancedfuel)
-* [esx_advancedgarage](https://github.com/HumanTree92/esx_advancedgarage)
-* [esx_advancedholdup](https://github.com/HumanTree92/esx_advancedholdup)
-* [esx_advancedhospital](https://github.com/HumanTree92/esx_advancedhospital)
-* [esx_advancedjail](https://github.com/HumanTree92/esx_advancedjail)
-* [esx_advancedvehicleshop](https://github.com/HumanTree92/esx_advancedvehicleshop)
-* [esx_advancedweaponshop](https://github.com/HumanTree92/esx_advancedweaponshop)
-* [esx_extraitems](https://github.com/HumanTree92/esx_extraitems)
-* [esx_joblisting](https://github.com/HumanTree92/esx_joblisting)
-* [esx_licenseshop](https://github.com/HumanTree92/esx_licenseshop)
-* [esx_vehiclespawner](https://github.com/HumanTree92/esx_vehiclespawner)
-* [FiveM_CustomMapAddons](https://github.com/HumanTree92/FiveM_CustomMapAddons)
-
-# Archived Scripts:
-Scripts that will no longer be Maintained.
-* [esx_aircraftshop](https://github.com/HumanTree92/esx_aircraftshop)
-* [esx_boatshop](https://github.com/HumanTree92/esx_boatshop)
-* [esx_truckshop](https://github.com/HumanTree92/esx_truckshop)
-* [esx_plasticsurgery](https://github.com/HumanTree92/esx_plasticsurgery)
-* [esx_hospital](https://github.com/HumanTree92/esx_hospital)
-* [esx_panicbutton](https://github.com/HumanTree92/esx_panicbutton)
-
-# Visit Velociti Entertainment:
-* TS3 - ts3.velocitientertainment.com
-* [Discord](http://discord.velocitientertainment.com)
-* [Website](http://velocitientertainment.com/)
-* [Forums](http://velocitientertainment.com/forum)
-* [About Us](http://velocitientertainment.com/pc-gaming/)
-* [Donate](http://velocitientertainment.com/donations/)
-* [Steam Group](http://steamcommunity.com/groups/velocitientertainment)
-* [Facebook](http://facebook.com/VelocitiEntertainment)
-* [Twitter](http://twitter.com/VelocitiEnt)
-* [YouTube](http://youtube.com/user/HumanTree92)
-* [Twitch](http://twitch.tv/humantree92)
-* [eBay](http://ebay.com/usr/humantree92)
 
 # Legal
 ### License

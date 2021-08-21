@@ -186,14 +186,14 @@ function ListOwnedAmbulanceMenu()
 end
 
 function StoreOwnedAmbulanceMenu()
-	local playerPed  = GetPlayerPed(-1)
+	local playerPed  = PlayerPedId()
 
 	if IsPedInAnyVehicle(playerPed,  false) then
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local coords = GetEntityCoords(playerPed)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
-		local current = GetPlayersLastVehicle(GetPlayerPed(-1), true)
+		local current = GetPlayersLastVehicle(PlayerPedId(), true)
 		local engineHealth = GetVehicleEngineHealth(current)
 		local plate = vehicleProps.plate
 
@@ -394,14 +394,14 @@ function ListOwnedPoliceMenu()
 end
 
 function StoreOwnedPoliceMenu()
-	local playerPed  = GetPlayerPed(-1)
+	local playerPed  = PlayerPedId()
 
 	if IsPedInAnyVehicle(playerPed,  false) then
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local coords = GetEntityCoords(playerPed)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
-		local current = GetPlayersLastVehicle(GetPlayerPed(-1), true)
+		local current = GetPlayersLastVehicle(PlayerPedId(), true)
 		local engineHealth = GetVehicleEngineHealth(current)
 		local plate = vehicleProps.plate
 
@@ -561,14 +561,14 @@ function ListOwnedMechanicMenu()
 end
 
 function StoreOwnedMechanicMenu()
-	local playerPed  = GetPlayerPed(-1)
+	local playerPed  = PlayerPedId()
 
 	if IsPedInAnyVehicle(playerPed,  false) then
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local coords = GetEntityCoords(playerPed)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
-		local current = GetPlayersLastVehicle(GetPlayerPed(-1), true)
+		local current = GetPlayersLastVehicle(PlayerPedId(), true)
 		local engineHealth = GetVehicleEngineHealth(current)
 		local plate = vehicleProps.plate
 
@@ -805,14 +805,14 @@ function ListOwnedAircraftsMenu()
 end
 
 function StoreOwnedAircraftsMenu()
-	local playerPed  = GetPlayerPed(-1)
+	local playerPed  = PlayerPedId()
 
 	if IsPedInAnyVehicle(playerPed,  false) then
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local coords = GetEntityCoords(playerPed)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
-		local current = GetPlayersLastVehicle(GetPlayerPed(-1), true)
+		local current = GetPlayersLastVehicle(PlayerPedId(), true)
 		local engineHealth = GetVehicleEngineHealth(current)
 		local plate = vehicleProps.plate
 
@@ -1136,14 +1136,14 @@ function ListOwnedBoatsMenu()
 end
 
 function StoreOwnedBoatsMenu()
-	local playerPed  = GetPlayerPed(-1)
+	local playerPed  = PlayerPedId()
 
 	if IsPedInAnyVehicle(playerPed,  false) then
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local coords = GetEntityCoords(playerPed)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
-		local current = GetPlayersLastVehicle(GetPlayerPed(-1), true)
+		local current = GetPlayersLastVehicle(PlayerPedId(), true)
 		local engineHealth = GetVehicleEngineHealth(current)
 		local plate = vehicleProps.plate
 
@@ -1332,7 +1332,7 @@ end
 Citizen.CreateThread(function()
 	while ESX.PlayerLoaded do
 		Citizen.Wait(Config.EngineCheckTime)
-		local ped = GetPlayerPed(-1)
+		local ped = PlayerPedId()
 		local current = GetPlayersLastVehicle(ped, true)
 		local engineHealth = GetVehicleEngineHealth(current)
 	
@@ -1493,14 +1493,14 @@ function ListOwnedCarsMenu()
 end
 
 function StoreOwnedCarsMenu()
-	local playerPed  = GetPlayerPed(-1)
+	local playerPed  = PlayerPedId()
 
 	if IsPedInAnyVehicle(playerPed,  false) then
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local coords = GetEntityCoords(playerPed)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
-		local current = GetPlayersLastVehicle(GetPlayerPed(-1), true)
+		local current = GetPlayersLastVehicle(PlayerPedId(), true)
 		local engineHealth = GetVehicleEngineHealth(current)
 		local plate = vehicleProps.plate
 
@@ -1776,7 +1776,7 @@ function SpawnVehicle(vehicle, plate)
 		--SetVehicleBodyHealth(callback_vehicle, 1000) -- Might not be needed
 		local carplate = GetVehicleNumberPlateText(callback_vehicle)
 		table.insert(vehInstance, {vehicleentity = callback_vehicle, plate = carplate})
-		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
+		TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
 	end)
 
 	TriggerServerEvent('esx_advancedgarage:setVehicleState', plate, false)
@@ -1794,7 +1794,7 @@ function SpawnVehicle2(vehicle, plate)
 		--SetVehicleBodyHealth(callback_vehicle, 1000) -- Might not be needed
 		local carplate = GetVehicleNumberPlateText(callback_vehicle)
 		table.insert(vehInstance, {vehicleentity = callback_vehicle, plate = carplate})
-		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
+		TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
 	end)
 
 	TriggerServerEvent('esx_advancedgarage:setVehicleState', plate, false)
@@ -1921,8 +1921,8 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 					local distance2 = #(playerCoords - v.Deleter)
 					local distance3 = #(playerCoords - v.Deleter2)
-					local coords = GetEntityCoords(GetPlayerPed(-1))
-        			local player = GetPlayerPed(-1)
+					local coords = GetEntityCoords(PlayerPedId())
+        			local player = PlayerPedId()
 
 					if distance < Config.Main.DrawDistance then
 						sleep = 1
@@ -2015,8 +2015,8 @@ Citizen.CreateThread(function()
 					local distance = #(playerCoords - v.Marker)
 					local distance2 = #(playerCoords - v.Deleter)
 					local distance3 = #(playerCoords - v.Deleter2)
-					local coords = GetEntityCoords(GetPlayerPed(-1))
-       				local player = GetPlayerPed(-1)
+					local coords = GetEntityCoords(PlayerPedId())
+       				local player = PlayerPedId()
 
 					if distance < Config.Main.DrawDistance then
 						sleep = 1
@@ -2164,8 +2164,8 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.AircraftGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
-				local coords = GetEntityCoords(GetPlayerPed(-1))
-        		local player = GetPlayerPed(-1)
+				local coords = GetEntityCoords(PlayerPedId())
+        		local player = PlayerPedId()
 
 				if distance < Config.Main.DrawDistance then
 					sleep = 1
@@ -2229,8 +2229,8 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.BoatGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
-				local coords = GetEntityCoords(GetPlayerPed(-1))
-        		local player = GetPlayerPed(-1)
+				local coords = GetEntityCoords(PlayerPedId())
+        		local player = PlayerPedId()
 				
 				if distance < Config.Main.DrawDistance then
 					sleep = 1
@@ -2294,8 +2294,8 @@ Citizen.CreateThread(function()
 			for k,v in pairs(Config.CarGarages) do
 				local distance = #(playerCoords - v.Marker)
 				local distance2 = #(playerCoords - v.Deleter)
-				local coords = GetEntityCoords(GetPlayerPed(-1))
-				local player = GetPlayerPed(-1)
+				local coords = GetEntityCoords(PlayerPedId())
+				local player = PlayerPedId()
 
 				if distance < Config.Main.DrawDistance then
 					sleep = 1
@@ -2337,8 +2337,8 @@ Citizen.CreateThread(function()
 				for k,v in pairs(Config.BezBlipu) do
 					local distance = #(playerCoords - v.Marker)
 					local distance2 = #(playerCoords - v.Deleter)
-					local coords = GetEntityCoords(GetPlayerPed(-1))
-					local player = GetPlayerPed(-1)
+					local coords = GetEntityCoords(PlayerPedId())
+					local player = PlayerPedId()
 	
 					if distance < Config.Main.DrawDistance then
 						sleep = 1
@@ -2448,7 +2448,7 @@ end)
 Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(0)
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 		local playerVeh = GetVehiclePedIsIn(playerPed, false)
 		local model = GetEntityModel(playerVeh)
 
