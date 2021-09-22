@@ -1,18 +1,29 @@
 Config = {}
 Config.Locale = "en"
 Config.Debug = true
-Config.OnlyGradeCanAdd = true -- true = only users with job grade can add car to society || false = everyone can add cars to society
-Config.CanTakeToSociety = true -- true = enable global command || false = disable global command 
+Config.OnlyGradeCanAdd = true 
+	-- true = only users with job grade can add car to society 
+	-- false = everyone can add cars to society
+Config.CanTakeToSociety = true 
+	-- true = enable global command 
+	-- false = disable global command 
 Config.CommandToAddSociety = "addsociety" -- Command to rewrite your personal car to society car
 Config.GradeToAddsociety = "boss" -- Job Grade that can add car to society
----
+
 Config.OnlyGradeCanTake = true -- Only person with specifc grade can take from society
 Config.BossCanWithDrawVehicle = true  -- Enable global command to take car from society
 Config.GradeToTakeFromSociety = "boss" -- Job Grade that can take from society
 Config.CommandToTakeFromSociety = "takesociety" -- Global command to take car from society. 
----
-Config.DrawHelp = '3DText' -- 3DText = DrawText3D || ESX = Default help notify
-Config.DecideToRepair = 'only_store' -- default = normal setting, where you get menu option || only_store = Store and don't repair and take money || repair_save_pay = Repair save an vehicle and pay it || broken_save_pay = player pay and vehicle will be broken 
+
+Config.DrawHelp = 'IM' 
+	-- 3DText = DrawText3D 
+	-- ESX = Default help notify 
+	-- IM = interaction-menu (for this is no other locale then Czech.. at the moment), you can find it on my github - https://github.com/icecubepiso/interaction-menu
+Config.DecideToRepair = 'only_store' 
+	-- default = normal setting, where you get menu option 
+	-- only_store = Store and don't repair and take money 
+	-- repair_save_pay = Repair save an vehicle and pay it 
+	-- broken_save_pay = player pay and vehicle will be broken 
 Config.EngineCheckTime = 10000
 
 
@@ -21,7 +32,9 @@ Config.Main = {
 	DrawDistance = 50.0, -- Draw Distance to Markers.
 	AdvVehShop = false, -- Set to true if using esx_advancedvehicleshop.
 	Commands = false, -- Will allow players to do /getproperties instead of having to log out & back in to see Private Garages.
-	ParkVehicles = true, -- true = Automatically Park all Vehicles in Garage on Server/Script Restart | false = Opposite of true but players will have to go to Pound to get their Vehicle Back.
+	ParkVehicles = true, 
+		-- true = Automatically Park all Vehicles in Garage on Server/Script Restart 
+		-- false = Opposite of true but players will have to go to Pound to get their Vehicle Back.
 	KickCheaters = false, -- true = Kick Player that tries to Cheat Garage by changing Vehicle Hash/Plate.
 	CustomKickMsg = false, -- true = Sets Custom Kick Message for those that try to Cheat. Note: "Config.KickPossibleCheaters" must be true.
 	GiveSocMoney = false, -- true = Gives money to society_mechanic. Note: REQUIRES esx_mechanicjob.
