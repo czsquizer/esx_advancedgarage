@@ -23,6 +23,7 @@ Advanced Garage System for ESX Legacy - Made by Human Tree92 edited (forked) by 
 * Optional:
   * [esx_vehicleshop](https://github.com/esx-framework/esx-legacy/tree/main/%5Besx_addons%5D/esx_vehicleshop)
   * [esx_mechanicjob](https://github.com/esx-framework/esx-legacy/tree/main/%5Besx_addons%5D/esx_mechanicjob)
+  * [interaction-menu](https://github.com/icecubepiso/interaction-menu)
 
 # Download & Installation:
 1) Download the .zip.

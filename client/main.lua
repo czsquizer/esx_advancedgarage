@@ -16,6 +16,8 @@ Citizen.CreateThread(function()
 			print('Using ESX notify as drawing style')
 		elseif Config.DrawHelp == '3DText' then
 			print('Using 3D Text as drawing style')
+		elseif Config.DrawHelp == 'IM' then
+			print('Drawing interaction menu as help')
 		end
 	end
 
@@ -1933,9 +1935,11 @@ Citizen.CreateThread(function()
 
 						if distance < Config.Ambulance.Markers.Points.x and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_garage_point'
-							DisableControlAction(0, 22, true)
 							if Config.DrawHelp == '3DText' then
-               				DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+               					DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Otevřít garáž")
 							end
 						end
 					end
@@ -1955,7 +1959,10 @@ Citizen.CreateThread(function()
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_store_point'
 							DisableControlAction(0, 22, true)
 							if Config.DrawHelp == '3DText' then
-                			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+                				DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 							end
 						end
 					end
@@ -1975,7 +1982,10 @@ Citizen.CreateThread(function()
 							isInMarker, this_Garage, currentZone = true, v, 'ambulance_store_point'
 							DisableControlAction(0, 22, true)
 							if Config.DrawHelp == '3DText' then
-                			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+                				DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 							end
 						end
 					end
@@ -2001,7 +2011,10 @@ Citizen.CreateThread(function()
 						end
 						if distance < 2 then
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+								DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření odtahovky")
 							end
 						end
 					end
@@ -2029,7 +2042,10 @@ Citizen.CreateThread(function()
 							isInMarker, this_Garage, currentZone = true, v, 'police_garage_point'
 							DisableControlAction(0, 22, true)
 							if Config.DrawHelp == '3DText' then
-                			DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+                				DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření garáže")
 							end
 						end
 					end
@@ -2048,7 +2064,10 @@ Citizen.CreateThread(function()
 						if distance2 < Config.Police.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							DisableControlAction(0, 22, true)
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+								DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 							end
 							isInMarker, this_Garage, currentZone = true, v, 'police_store_point'
 						end
@@ -2068,7 +2087,10 @@ Citizen.CreateThread(function()
 						if distance3 < Config.Police.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							DisableControlAction(0, 22, true)
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+								DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 							end
 							isInMarker, this_Garage, currentZone = true, v, 'police_store_point'
 						end
@@ -2094,7 +2116,10 @@ Citizen.CreateThread(function()
 						end
 						if distance < 2 then
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+								DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření odtahovky")
 							end
 						end
 					end
@@ -2152,7 +2177,10 @@ Citizen.CreateThread(function()
 						end
 						if distance < 2 then
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+								DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření odtahovky")
 							end
 						end
 					end
@@ -2176,10 +2204,13 @@ Citizen.CreateThread(function()
 
 					if distance < Config.Aircrafts.Markers.Points.x and IsPedOnFoot(player, true) then
 						DisableControlAction(0, 22, true)
-						if Config.DrawHelp == '3DText' then
-                		DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
-						end
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_garage_point'
+						if Config.DrawHelp == '3DText' then
+                			DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření garáže")
+						end
 					end
 				end
 
@@ -2187,18 +2218,19 @@ Citizen.CreateThread(function()
 					sleep = 1
 
 					if Config.Aircrafts.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
-						DisableControlAction(0, 22, true)
 						DrawMarker(Config.Aircrafts.Markers.Delete.Type, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Aircrafts.Markers.Delete.r, Config.Aircrafts.Markers.Delete.g, Config.Aircrafts.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
 					else
 						DrawMarker(Config.Aircrafts.Markers.Points.Type, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Aircrafts.Markers.Points.r, Config.Aircrafts.Markers.Points.g, Config.Aircrafts.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 					end
 
 					if distance2 < Config.Aircrafts.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
-						DisableControlAction(0, 22, true)
-						if Config.DrawHelp == '3DText' then
-                		DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
-						end
 						isInMarker, this_Garage, currentZone = true, v, 'aircraft_store_point'
+						if Config.DrawHelp == '3DText' then
+                			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
+						end
 					end
 				end
 			end
@@ -2218,7 +2250,10 @@ Citizen.CreateThread(function()
 					end
 					if distance < 2 then
 						if Config.DrawHelp == '3DText' then
-						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření odtahovky")
 						end
 					end
 				end
@@ -2241,9 +2276,11 @@ Citizen.CreateThread(function()
 
 					if distance < Config.Boats.Markers.Points.x and IsPedOnFoot(player, true) then
 						isInMarker, this_Garage, currentZone = true, v, 'boat_garage_point'
-						DisableControlAction(0, 22, true)
 						if Config.DrawHelp == '3DText' then
-                		DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+                			DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření odtahovky")
 						end
 					end
 				end
@@ -2261,7 +2298,10 @@ Citizen.CreateThread(function()
 					if distance2 < Config.Boats.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 						DisableControlAction(0, 22, true)
 						if Config.DrawHelp == '3DText' then
-                		DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+                			DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 						end
 						isInMarker, this_Garage, currentZone = true, v, 'boat_store_point'
 					end
@@ -2283,7 +2323,10 @@ Citizen.CreateThread(function()
 					end
 					if distance < 2 then
 						if Config.DrawHelp == '3DText' then
-						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření odtahovky")
 						end
 					end
 				end
@@ -2304,10 +2347,12 @@ Citizen.CreateThread(function()
 					end
 
 					if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
-						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'	
-						DisableControlAction(0, 22, true)
+						isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
 						if Config.DrawHelp == '3DText' then
-						DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'green', "[E] Pro otevření garáže")
 						end
 					end
 				end
@@ -2316,16 +2361,17 @@ Citizen.CreateThread(function()
 					sleep = 1
 
 					if Config.Cars.Markers.Delete.Type ~= -1 and IsPedInAnyVehicle(player, true) then
-						DisableControlAction(0, 22, true)
 						DrawMarker(21, v.Deleter.x, v.Deleter.y, v.Deleter.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, -0.7, Config.Cars.Markers.Delete.r, Config.Cars.Markers.Delete.g, Config.Cars.Markers.Delete.b, 100, true, true, 2, false, nil, nil, false)
 					else
 						DrawMarker(21, v.Marker.x, v.Marker.y, v.Marker.z + 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.7, Config.Cars.Markers.Points.r, Config.Cars.Markers.Points.g, Config.Cars.Markers.Points.b, 100, true, true, 2, false, nil, nil, false)	
 					end
 
 					if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
-						DisableControlAction(0, 22, true)
 						if Config.DrawHelp == '3DText' then
-						DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 						end
 						isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 					end
@@ -2349,7 +2395,10 @@ Citizen.CreateThread(function()
 						if distance < Config.Cars.Markers.Points.x and IsPedOnFoot(player, true) then
 							isInMarker, this_Garage, currentZone = true, v, 'car_garage_point'
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+								DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 1.2, tostring(_U('3d_press_to_enter')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro otevření garáže")
 							end
 						end
 					end
@@ -2365,7 +2414,10 @@ Citizen.CreateThread(function()
 	
 						if distance2 < Config.Cars.Markers.Delete.x and IsPedInAnyVehicle(player, true) then
 							if Config.DrawHelp == '3DText' then
-							DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+								DrawText3Dx(v.Deleter.x, v.Deleter.y, v.Deleter.z + 1.2, tostring(_U('3d_press_to_delete')))
+							elseif Config.DrawHelp == 'IM' then 
+								inZone  = true
+								exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro uložení vozu")
 							end
 							isInMarker, this_Garage, currentZone = true, v, 'car_store_point'
 						end
@@ -2385,6 +2437,9 @@ Citizen.CreateThread(function()
 					if distance < 2 then
 						if Config.DrawHelp == '3DText' then
 							DrawText3Dx(v.Marker.x, v.Marker.y, v.Marker.z + 0.2, tostring(_U('3d_press_to_impound')))
+						elseif Config.DrawHelp == 'IM' then 
+							inZone  = true
+							exports['interaction-menu']:ShowInteraction('show', 'red', "[E] Pro otevření odtahovky")
 						end
 					end
 
@@ -2438,8 +2493,17 @@ Citizen.CreateThread(function()
 		if not isInMarker and HasAlreadyEnteredMarker then
 			HasAlreadyEnteredMarker = false
 			TriggerEvent('esx_advancedgarage:hasExitedMarker', LastZone)
+			exports['interaction-menu']:HideInteraction()
 		end
 		Wait(sleep)
+	end
+	-- yoinked from cd TriHard
+	if inZone and not alreadyEnteredZone then
+		alreadyEnteredZone = true
+	end
+	if not inZone and alreadyEnteredZone then
+		alreadyEnteredZone = false
+		exports['interaction-menu']:HideInteraction()
 	end
 end
 end)
@@ -2453,7 +2517,7 @@ Citizen.CreateThread(function()
 		local model = GetEntityModel(playerVeh)
 
 		if CurrentAction then
-			if Config.DrawHelp == 'ESX' then
+			if Config.DrawHelp == 'ESX' and Config.Draw ~- 'IM' then
 				ESX.ShowHelpNotification(CurrentActionMsg)
 			else
 				if Config.Debug then
