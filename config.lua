@@ -1,6 +1,6 @@
 Config = {}
 Config.Locale = "en"
-Config.Debug = true
+Config.Debug = false
 Config.OnlyGradeCanAdd = true 
 	-- true = only users with job grade can add car to society 
 	-- false = everyone can add cars to society
@@ -29,7 +29,7 @@ Config.EngineCheckTime = 10000
 
 Config.Main = {
 	MenuAlign = 'top-right', -- Menu Align. Current will show on Top Left.
-	DrawDistance = 50.0, -- Draw Distance to Markers.
+	DrawDistance = 15.0, -- Draw Distance to Markers.
 	AdvVehShop = false, -- Set to true if using esx_advancedvehicleshop.
 	Commands = false, -- Will allow players to do /getproperties instead of having to log out & back in to see Private Garages.
 	ParkVehicles = true, 

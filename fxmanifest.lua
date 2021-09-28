@@ -7,7 +7,7 @@ description 'ESX Advanced Garage'
 Author 'Human Tree92 | Velociti Entertainment'
 
 version '1.1.5'
-
+shared_script '@es_extended/imports.lua'
 server_scripts {
 	'@mysql-async/lib/MySQL.lua',
 	'@es_extended/locale.lua',
@@ -27,7 +27,8 @@ client_scripts {
 	'locales/es.lua',
 	'locales/cs.lua',
 	'config.lua',
-	'client/main.lua'
+	'client/main.lua',
+	'vehicle_names.lua'
 }
 
 dependencies {

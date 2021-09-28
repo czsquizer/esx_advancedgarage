@@ -1,40 +1,6 @@
 local CurrentActionData, PlayerData, userProperties, this_Garage, vehInstance, BlipList, PrivateBlips, JobBlips = {}, {}, {}, {}, {}, {}, {}, {}
 local HasAlreadyEnteredMarker, WasInPound, WasinJPound = false, false, false
 local LastZone, CurrentAction, CurrentActionMsg
-ESX = nil
-
-
-Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-		Citizen.Wait(0)
-	end
-
-
-	if Config.Debug then
-		if Config.DrawHelp == 'ESX' then
-			print('Using ESX notify as drawing style')
-		elseif Config.DrawHelp == '3DText' then
-			print('Using 3D Text as drawing style')
-		elseif Config.DrawHelp == 'IM' then
-			print('Drawing interaction menu as help')
-		end
-	end
-
-
-	while ESX.GetPlayerData().job == nil do
-		Citizen.Wait(10)
-	end
-
-	while not GetResourceState('esx_menu_default') == 'started' do
-		Citizen.Wait(200)
-	end
-
-	ESX.PlayerData = ESX.GetPlayerData()
-
-	CreateBlips()
-	RefreshJobBlips()
-end)
 
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
@@ -48,6 +14,7 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
 
 	ESX.PlayerData = xPlayer
 
+	CreateBlips()
 	RefreshJobBlips()
 end)
 
@@ -1396,9 +1363,9 @@ function ListOwnedCarsMenu()
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage')..' (Stav: POJÍZDNÉ )')
+								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage'))
 							else
-								labelvehicle = labelvehicle2 .. ('<span style="color:#5654e4; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
+								labelvehicle = labelvehicle2 .. ('<span style="color:red; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
 							end
 						else
 							if v.stored then
@@ -1450,9 +1417,9 @@ function ListOwnedCarsMenu()
 		
 						if Config.Main.ShowVehLoc then
 							if v.stored then
-								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage')..' (Stav: POJIZDNÉ)')
+								labelvehicle = labelvehicle2 .. ('<span style="color:green; font-size: 16px;">%s</span>'):format(_U('loc_garage'))
 							else
-								labelvehicle = labelvehicle2 .. ('<span style="color:#5654e4; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
+								labelvehicle = labelvehicle2 .. ('<span style="color:red; font-size: 16px;">%s</span>'):format(_U('loc_pound')..' ($'..Config.Cars.PoundP..')')
 							end
 						else
 							if v.stored then
@@ -2517,12 +2484,8 @@ Citizen.CreateThread(function()
 		local model = GetEntityModel(playerVeh)
 
 		if CurrentAction then
-			if Config.DrawHelp == 'ESX' and Config.Draw ~- 'IM' then
+			if Config.DrawHelp == 'ESX' then
 				ESX.ShowHelpNotification(CurrentActionMsg)
-			else
-				if Config.Debug then
-					print('Drawing ESX notification for garages')
-				end
 			end
 
 			if IsControlJustReleased(0, 38) then
