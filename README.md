@@ -1,5 +1,7 @@
-# Quality hosting with preconfigured and DDoS protected cheap FiveM servers. Use link: https://zap-hosting.com/sqzscripts or a code when processing your order: `squizer-8709`
-[<img src="https://zap-hosting.com/interface/download/images.php?type=affiliate&id=202971">](https://zap-hosting.com/sqzscripts) 
+# <center>Quality hosting with preconfigured and DDoS protected cheap FiveM servers. Use link: https://zap-hosting.com/sqzscripts or a code when processing your order: `squizer-8709`.</center>
+[<img src="https://zap-hosting.com/interface/download/images.php?type=affiliate&id=202971">](https://zap-hosting.com/sqzscripts)
+
+---
 
 # About esx_advancedgarage:
 Advanced Garage System for ESX V1 Final or EXM - Made by Human Tree92 ([Velociti Entertainment Customs & Wiki](http://www.velocitientertainment.com/customs/)) edited (forked) by Squizer#3020
